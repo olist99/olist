@@ -1,18 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  images: {
-    remotePatterns: [
-      { protocol: 'https', hostname: 'www.habbo.com' },
-      { protocol: 'https', hostname: 'images.habbo.com' },
-      { protocol: 'http', hostname: 'localhost' },
-    ],
-  },
-  experimental: {
-    serverActions: {
-      bodySizeLimit: '2mb',
-      allowedOrigins: ['localhost', '127.0.0.1', 'localhost:3000', '127.0.0.1:3000', 'habbo.plus', 'www.habbo.plus'],
-    },
-  },
+  output: 'standalone',
+
+  // Short timeout so if any page somehow tries to do a DB query at build
+  // time it fails fast rather than hanging forever.
+  staticPageGenerationTimeout: 30,
 };
- 
+
 module.exports = nextConfig;
