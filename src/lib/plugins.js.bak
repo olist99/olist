@@ -1,0 +1,17 @@
+const NAV_ITEMS = [
+  { slug: 'community',   name: 'Community',    icon: '/images/nav-community.png',   href: '/community',    navOrder: 1, core: true,     description: 'Core community hub and profiles' },
+  { slug: 'shop',        name: 'Shop',          icon: '/images/nav-shop.png',        href: '/shop',         navOrder: 2, enabled: true,  description: 'Purchase items with in-game currency' },
+  { slug: 'marketplace', name: 'Marketplace',   icon: '/images/nav-marketplace.png', href: '/marketplace',  navOrder: 3, enabled: true,  description: 'Player-to-player trading marketplace' },
+  { slug: 'gambling',    name: 'Gambling',      icon: '/images/nav-gambling.png',    href: '/gambling',     navOrder: 4, enabled: true,  description: 'Casino games and case openings' },
+  { slug: 'forum',       name: 'Forum',         icon: '/images/nav-forum.png',       href: '/forum',        navOrder: 5, enabled: true,  description: 'Community forum, contests and discussions', version: '1.0' },
+  { slug: 'badge-maker', name: 'Badge Maker',   icon: '/images/nav-badges.png',      href: '/badge-maker',  navOrder: 6, enabled: true,  description: 'Design and create custom hotel badges', version: '1.0', minRank: 0 },
+  { slug: 'help',        name: 'Rules & Help',  icon: '/images/nav-help.png',        href: '/rules',        navOrder: 7, core: true,     description: 'Hotel rules and support tickets' },
+];
+
+export function getNavLinks() {
+  return NAV_ITEMS.filter(p => p.core || p.enabled).sort((a, b) => a.navOrder - b.navOrder)
+    .map(p => ({ href: p.href, label: p.name, icon: p.icon }));
+}
+export function isPluginEnabled(slug) { const i = NAV_ITEMS.find(n => n.slug === slug); return i ? (i.core || i.enabled) : false; }
+export function getAllPlugins() { return NAV_ITEMS.map(p => ({ ...p, enabled: !!(p.core || p.enabled), removable: !p.core })); }
+export default NAV_ITEMS;
