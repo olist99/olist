@@ -1,5 +1,4 @@
-// Plugin registry — controls what appears in the Admin > Plugins tab.
-// Nav items are now managed directly in src/components/Header.jsx.
+import { queryOne } from '@/lib/db';
 
 const PLUGINS = [
   { slug: 'shop',        name: 'Shop',          href: '/shop',        description: 'Purchase items with in-game currency',        version: '1.2', enabled: true },
@@ -11,13 +10,17 @@ const PLUGINS = [
   { slug: 'help',        name: 'Rules & Help',  href: '/rules',       description: 'Hotel rules and support tickets',             version: '1.1', enabled: true },
 ];
 
-// Async — checks cms_settings for DB-backed toggle, falls back to static config
+// During build there is no DB — fall back to static defaults so the build
+// doesn't hang waiting for a connection that will never come.
+const IS_BUILD = process.env.NEXT_PHASE === 'phase-production-build';
+
 export async function isPluginEnabled(slug) {
-  try {
-    const { queryOne } = await import('@/lib/db');
-    const row = await queryOne('SELECT `value` FROM cms_settings WHERE `key` = ?', [`plugin_${slug}`]);
-    if (row) return row.value === '1';
-  } catch {}
+  if (!IS_BUILD) {
+    try {
+      const row = await queryOne('SELECT `value` FROM cms_settings WHERE `key` = ?', ['plugin_' + slug]);
+      if (row) return row.value === '1';
+    } catch {}
+  }
   const p = PLUGINS.find(p => p.slug === slug);
   return p ? p.enabled : false;
 }

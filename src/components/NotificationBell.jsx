@@ -19,7 +19,7 @@ const TYPE_ICONS = {
 
 function timeAgo(str) {
   if (!str) return '';
-  const diff = Math.floor((Date.now() - new Date(str)) / 1000);
+  const diff = Math.floor((Date.now() - new Date(str.toString().trim().replace(' UTC', '').replace(' ', 'T') + (str.toString().endsWith('Z') ? '' : 'Z'))) / 1000);
   if (diff < 60) return 'just now';
   if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
   if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;

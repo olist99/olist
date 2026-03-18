@@ -6,14 +6,15 @@ import { Suspense, useState, useEffect } from 'react';
 import NotificationBell from './NotificationBell';
 
 // ── Top nav items — edit here to add/remove/reorder ──
+// slug matches the plugin slug in plugins.js — null means always shown (core page)
 const NAV_ITEMS = [
-  { href: '/community',   label: 'Community',    icon: '/images/nav-community.png' },
-  { href: '/shop',        label: 'Shop',         icon: '/images/nav-shop.png' },
-  { href: '/marketplace', label: 'Marketplace',  icon: '/images/nav-marketplace.png' },
-  { href: '/auction',     label: 'Auction',      icon: '/images/nav-marketplace.png' },
-  { href: '/gambling',    label: 'Gambling',     icon: '/images/nav-gambling.png' },
-  { href: '/forum',       label: 'Forum',        icon: '/images/nav-forum.png' },
-  { href: '/rules',       label: 'Rules & Help', icon: '/images/nav-help.png' },
+  { href: '/community',   label: 'Community',    icon: '/images/nav-community.png',    slug: null },
+  { href: '/shop',        label: 'Shop',         icon: '/images/nav-shop.png',         slug: 'shop' },
+  { href: '/marketplace', label: 'Marketplace',  icon: '/images/nav-marketplace.png',  slug: 'marketplace' },
+  { href: '/auction',     label: 'Auction',      icon: '/images/nav-marketplace.png',  slug: 'auction' },
+  { href: '/gambling',    label: 'Gambling',     icon: '/images/nav-gambling.png',     slug: 'gambling' },
+  { href: '/forum',       label: 'Forum',        icon: '/images/nav-forum.png',        slug: 'forum' },
+  { href: '/rules',       label: 'Rules & Help', icon: '/images/nav-help.png',         slug: 'help' },
 ];
 
 const COMMUNITY_ITEMS = [
@@ -132,11 +133,16 @@ function SubNavInner({ user, path }) {
   });
 }
 
-export default function Header({ user, onlineCount }) {
+export default function Header({ user, onlineCount, enabledPlugins = null }) {
   const path = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => { setMobileOpen(false); }, [path]);
+
+  // Filter nav items based on enabled plugins (null slug = always shown)
+  const visibleNavItems = enabledPlugins
+    ? NAV_ITEMS.filter(item => item.slug === null || enabledPlugins.includes(item.slug))
+    : NAV_ITEMS;
 
   const activeNav = getActiveNav(path);
   const isNavActive = (href) => {
@@ -207,7 +213,7 @@ export default function Header({ user, onlineCount }) {
               </Link>
             )}
             <div className="mobile-nav-divider">Pages</div>
-            {NAV_ITEMS.map(item => (
+            {visibleNavItems.map(item => (
               <Link key={item.href} href={item.href}
                 className={`mobile-nav-item${isNavActive(item.href) ? ' active' : ''}`}
                 onClick={() => setMobileOpen(false)}>
@@ -263,7 +269,7 @@ export default function Header({ user, onlineCount }) {
                 </Link>
               </li>
             )}
-            {NAV_ITEMS.map(item => (
+            {visibleNavItems.map(item => (
               <li key={item.href} style={isNavActive(item.href) ? { background: 'rgba(26,25,36,0.37)', boxShadow: 'inset 0 -2px var(--green)' } : {}}>
                 <Link href={item.href}>
                   <div className="nav-icon">

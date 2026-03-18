@@ -4,7 +4,7 @@ import Link from 'next/link';
 
 // Move timeAgo here so it's in scope
 function timeAgo(date) {
-  const diff = Math.floor((Date.now() - new Date(date)) / 1000);
+  const diff = Math.floor((Date.now() - new Date(date.toString().trim().replace(' UTC', '').replace(' ', 'T') + (date.toString().endsWith('Z') ? '' : 'Z'))) / 1000);
   if (diff < 60) return 'just now';
   if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
   if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;

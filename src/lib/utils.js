@@ -35,14 +35,40 @@ export function furniUrl(itemName) {
 }
 
 /**
+ * Parse a UTC datetime string from the DB into a JS Date.
+ * Handles formats like "2026-03-18 14:00:00 UTC", "2026-03-18 14:00:00", or ISO strings.
+ * Always treats bare datetime strings as UTC so display is correct in every timezone.
+ */
+export function parseUtc(dateStr) {
+  if (!dateStr) return null;
+  if (typeof dateStr === 'number') return new Date(dateStr * 1000);
+  const s = dateStr.toString().trim().replace(' UTC', '').replace(' ', 'T');
+  // If no timezone info, treat as UTC by appending Z
+  return new Date(s.endsWith('Z') ? s : s + 'Z');
+}
+
+/**
+ * Format a UTC datetime string from the DB into the user's local timezone.
+ * Use this anywhere you display a stored timestamp to a user.
+ */
+export function formatUtcDate(dateStr, opts) {
+  const d = parseUtc(dateStr);
+  if (!d || isNaN(d)) return '—';
+  return d.toLocaleString(undefined, opts || {
+    day: '2-digit', month: 'short', year: 'numeric',
+    hour: '2-digit', minute: '2-digit',
+  });
+}
+
+/**
  * Time ago helper
  */
 export function timeAgo(dateStr) {
   if (!dateStr) return 'Never';
+  // Arcturus stores account_created as unix timestamp (number)
+  const then = parseUtc(dateStr);
+  if (!then || isNaN(then)) return 'Never';
   const now = new Date();
-  const date = new Date(dateStr);
-  // Arcturus stores account_created as unix timestamp
-  const then = typeof dateStr === 'number' ? new Date(dateStr * 1000) : date;
   const seconds = Math.floor((now - then) / 1000);
 
   if (seconds < 60) return 'just now';
