@@ -3,6 +3,8 @@ import Link from 'next/link';
 import { getCurrentUser } from '@/lib/auth';
 import { query, queryOne } from '@/lib/db';
 
+export const dynamic = 'force-dynamic';
+
 const FURNI_RENDER = process.env.NEXT_PUBLIC_FURNI_RENDER_URL || '/swf/dcr/hof_furni/';
 const FURNI_ICON = process.env.NEXT_PUBLIC_FURNI_URL || '/swf/dcr/hof_furni/icons/';
 const HABBO_IMG = process.env.NEXT_PUBLIC_HABBO_IMG || 'https://www.habbo.com/habbo-imaging/avatarimage';
@@ -13,8 +15,14 @@ const CURRENCY_ICONS = {
   points: '/images/diamond.png',
 };
 
+function parseUtc(dateStr) {
+  if (!dateStr) return new Date(NaN);
+  const s = dateStr.toString().trim().replace(' UTC', '').replace(' ', 'T');
+  return new Date(s.endsWith('Z') ? s : s + 'Z');
+}
+
 function timeAgo(date) {
-  const diff = Date.now() - new Date(date).getTime();
+  const diff = Date.now() - parseUtc(date).getTime();
   const s = Math.floor(diff / 1000);
   if (s < 60) return `${s}s ago`;
   const m = Math.floor(s / 60);
@@ -25,7 +33,9 @@ function timeAgo(date) {
 }
 
 function formatDt(date) {
-  return new Date(date).toLocaleString('en-GB', {
+  const d = parseUtc(date);
+  if (!d || isNaN(d)) return '—';
+  return d.toLocaleString(undefined, {
     day: '2-digit', month: 'short', year: 'numeric',
     hour: '2-digit', minute: '2-digit',
   });
@@ -69,7 +79,7 @@ export default async function AuctionProfilePage({ params }) {
     ORDER BY b.created_at ASC
   `, [auctionId]).catch(() => []);
 
-  const isEnded = auction.status === 'ended' || new Date(auction.end_time) <= new Date();
+  const isEnded = auction.status === 'ended' || parseUtc(auction.end_time) <= new Date();
   const currIcon = CURRENCY_ICONS[auction.currency] || '/images/coin.png';
 
   return (
@@ -92,7 +102,7 @@ export default async function AuctionProfilePage({ params }) {
               {auction.is_official && (
                 <span style={{ fontSize: 9, fontWeight: 800, padding: '2px 8px', borderRadius: 20, background: 'rgba(52,189,89,0.15)', color: 'var(--green)', flexShrink: 0 }}>OFFICIAL</span>
               )}
-              <h1 style={{ fontSize: 18, fontWeight: 800, flex: 1 }}>{auction.title}</h1>
+              <h1 style={{ fontSize: 18, fontWeight: 800, flex: 1 }}>{(auction.title || '').replace(/^\d+\s+/, '')}</h1>
               <span style={{
                 fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 20,
                 background: isEnded ? 'rgba(255,255,255,0.06)' : 'rgba(52,189,89,0.1)',

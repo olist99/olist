@@ -2,6 +2,8 @@ import { redirect } from 'next/navigation';
 import { getCurrentUser } from '@/lib/auth';
 import FurnitureManager from './FurnitureManager';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata = { title: 'Furniture Manager' };
 
 export default async function FurniturePage() {

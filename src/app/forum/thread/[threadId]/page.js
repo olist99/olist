@@ -5,6 +5,8 @@ import { query, queryOne } from '@/lib/db';
 import ThreadActions from './ThreadActions';
 import { renderBBCode } from '@/lib/bbcode';
 
+export const dynamic = 'force-dynamic';
+
 export async function generateMetadata({ params }) {
   const p = await params;
   const thread = await queryOne('SELECT title FROM cms_forum_threads WHERE id = ?', [parseInt(p.threadId)]).catch(() => null);
@@ -25,7 +27,8 @@ export default async function ThreadPage({ params, searchParams }) {
   const thread = await queryOne(`
     SELECT t.*, u.username, u.look, u.rank AS user_rank,
       c.name AS category_name, c.icon AS category_icon, c.id AS category_id,
-      c.min_rank, c.post_min_rank
+      c.min_rank, c.post_min_rank,
+      COALESCE(t.created_at, t.timestamp, t.date, t.posted_at) AS created_at
     FROM cms_forum_threads t
     JOIN users u ON u.id = t.user_id
     JOIN cms_forum_categories c ON c.id = t.category_id
@@ -105,12 +108,21 @@ export default async function ThreadPage({ params, searchParams }) {
   const canPost = user.rank >= thread.post_min_rank && !thread.locked;
   const isAdmin = user.rank >= 4;
 
+  function parseUtc(date) {
+    if (!date) return new Date(NaN);
+    const s = date.toString().trim().replace(' UTC', '').replace(' ', 'T');
+    return new Date(s.endsWith('Z') ? s : s + 'Z');
+  }
+
   function timeAgo(date) {
-    const diff = Math.floor((Date.now() - new Date(date)) / 1000);
+    if (!date) return '';
+    const d = parseUtc(date);
+    if (isNaN(d)) return '';
+    const diff = Math.floor((Date.now() - d) / 1000);
     if (diff < 60) return 'just now';
     if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
     if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
-    return new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
   }
 
   function avatarUrl(look) {

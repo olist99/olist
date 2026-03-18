@@ -51,7 +51,7 @@ export default async function EconomySection({ view, sp, user }) {
           {casesData.length === 0 ? (
             <p style={{ color: 'var(--text-muted)', fontSize: 12, textAlign: 'center', padding: 20 }}>No cases yet. Create one to get started!</p>
           ) : (
-            <table className="table-panel">
+            <div className="adm-table-wrap"><table className="table-panel">
               <thead><tr><th>Name</th><th>Price</th><th>Items</th><th>Active</th><th></th></tr></thead>
               <tbody>
                 {casesData.map(c => (
@@ -67,7 +67,7 @@ export default async function EconomySection({ view, sp, user }) {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
           )}
         </div>
       </div>
@@ -123,7 +123,7 @@ export default async function EconomySection({ view, sp, user }) {
             <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Run <code>sql/ocms_missing_tables.sql</code> to create the table.</p>
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: '280px 1fr', gap: 16 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'min(280px, 100%) 1fr', flexWrap: 'wrap', gap: 16 }}>
             {/* Sidebar: Add Rare form */}
             <div className="panel no-hover" style={{ padding: 20 }}>
               <h4 style={{ fontSize: 13, fontWeight: 700, marginBottom: 14 }}>Add Rare</h4>
@@ -158,7 +158,7 @@ export default async function EconomySection({ view, sp, user }) {
                 {rares.length === 0 ? (
                   <p style={{ color: 'var(--text-muted)', fontSize: 12, textAlign: 'center', padding: 20 }}>No rare values tracked yet.</p>
                 ) : (
-                  <table className="table-panel">
+                  <div className="adm-table-wrap"><table className="table-panel">
                     <thead><tr><th>Item Name</th><th>Value</th><th>Trend</th><th>Category</th><th>Updated</th><th></th></tr></thead>
                     <tbody>
                       {rares.map(r => (
@@ -177,7 +177,7 @@ export default async function EconomySection({ view, sp, user }) {
                         </tr>
                       ))}
                     </tbody>
-                  </table>
+                  </table></div>
                 )}
               </div>
 
@@ -185,7 +185,7 @@ export default async function EconomySection({ view, sp, user }) {
               {history.length > 0 && (
                 <div className="panel no-hover" style={{ padding: 20 }}>
                   <h4 style={{ fontSize: 13, fontWeight: 700, marginBottom: 12 }}>Recent Value Changes</h4>
-                  <table className="table-panel">
+                  <div className="adm-table-wrap"><table className="table-panel">
                     <thead><tr><th>Item</th><th>Old Credits</th><th>New Credits</th><th>Changed By</th><th>Date</th></tr></thead>
                     <tbody>
                       {history.map((h, i) => (
@@ -198,7 +198,7 @@ export default async function EconomySection({ view, sp, user }) {
                         </tr>
                       ))}
                     </tbody>
-                  </table>
+                  </table></div>
                 </div>
               )}
             </div>
@@ -226,7 +226,7 @@ export default async function EconomySection({ view, sp, user }) {
           {listings.length === 0 ? (
             <p style={{ color: 'var(--text-muted)', fontSize: 12, textAlign: 'center', padding: 20 }}>No active marketplace listings.</p>
           ) : (
-            <table className="table-panel">
+            <div className="adm-table-wrap"><table className="table-panel">
               <thead><tr><th>Item</th><th>Seller</th><th>Price</th><th>Listed</th></tr></thead>
               <tbody>
                 {listings.map((m, i) => (
@@ -238,7 +238,7 @@ export default async function EconomySection({ view, sp, user }) {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
           )}
         </div>
       </div>
@@ -257,7 +257,7 @@ export default async function EconomySection({ view, sp, user }) {
     return (
       <div>
         <SectionHeader title="Credit Statistics" sub="Current economy overview" back="economy" />
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 16 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 12, marginBottom: 16 }}>
           {[
             { label: 'Total Credits in Circulation', val: parseInt(totalCredits||0).toLocaleString(), color: '#f5c842' },
             { label: 'Total Duckets in Circulation', val: parseInt(totalPixels||0).toLocaleString(), color: '#a0b4ff' },
@@ -271,7 +271,7 @@ export default async function EconomySection({ view, sp, user }) {
         </div>
         <div className="panel no-hover" style={{ padding: 20 }}>
           <h4 style={{ fontSize: 13, fontWeight: 700, marginBottom: 14 }}>Top 10 Richest Players</h4>
-          <table className="table-panel">
+          <div className="adm-table-wrap"><table className="table-panel">
             <thead><tr><th>#</th><th>Username</th><th>Credits</th><th>Duckets</th><th>Diamonds</th></tr></thead>
             <tbody>
               {richest.map((u, i) => (
@@ -284,7 +284,7 @@ export default async function EconomySection({ view, sp, user }) {
                 </tr>
               ))}
             </tbody>
-          </table>
+          </table></div>
         </div>
       </div>
     );
@@ -301,7 +301,7 @@ export default async function EconomySection({ view, sp, user }) {
       <div>
         <SectionHeader title="Item Circulation" sub="Most common items owned by players" back="economy" />
         <div className="panel no-hover" style={{ padding: 20 }}>
-          <table className="table-panel">
+          <div className="adm-table-wrap"><table className="table-panel">
             <thead><tr><th>Item</th><th>Base Name</th><th>Quantity in Game</th></tr></thead>
             <tbody>
               {topItems.map((item, i) => (
@@ -313,7 +313,7 @@ export default async function EconomySection({ view, sp, user }) {
               ))}
               {topItems.length === 0 && <tr><td colSpan={3} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 20 }}>No item data found.</td></tr>}
             </tbody>
-          </table>
+          </table></div>
         </div>
       </div>
     );
@@ -330,7 +330,7 @@ export default async function EconomySection({ view, sp, user }) {
     return (
       <div>
         <SectionHeader title="Marketplace Analytics" sub="Sales performance and trends" back="economy" />
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, marginBottom: 16 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 12, marginBottom: 16 }}>
           <div className="panel no-hover" style={{ padding: '16px 18px', textAlign: 'center' }}>
             <div style={{ fontSize: 28, fontWeight: 800, color: '#a442c2' }}>{parseInt(sold24h||0).toLocaleString()}</div>
             <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>Sales in last 24h</div>
@@ -340,10 +340,10 @@ export default async function EconomySection({ view, sp, user }) {
             <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>Sales in last 7 days</div>
           </div>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 12 }}>
           <div className="panel no-hover" style={{ padding: 20 }}>
             <h4 style={{ fontSize: 13, fontWeight: 700, marginBottom: 10 }}>Top Sellers</h4>
-            <table className="table-panel">
+            <div className="adm-table-wrap"><table className="table-panel">
               <thead><tr><th>Username</th><th>Sales</th><th>Revenue</th></tr></thead>
               <tbody>
                 {topSellers.map((s, i) => (
@@ -351,11 +351,11 @@ export default async function EconomySection({ view, sp, user }) {
                 ))}
                 {topSellers.length === 0 && <tr><td colSpan={3} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 10 }}>No data</td></tr>}
               </tbody>
-            </table>
+            </table></div>
           </div>
           <div className="panel no-hover" style={{ padding: 20 }}>
             <h4 style={{ fontSize: 13, fontWeight: 700, marginBottom: 10 }}>Top Selling Items</h4>
-            <table className="table-panel">
+            <div className="adm-table-wrap"><table className="table-panel">
               <thead><tr><th>Item</th><th>Sales</th></tr></thead>
               <tbody>
                 {topItems.map((item, i) => (
@@ -363,7 +363,7 @@ export default async function EconomySection({ view, sp, user }) {
                 ))}
                 {topItems.length === 0 && <tr><td colSpan={2} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 10 }}>No data</td></tr>}
               </tbody>
-            </table>
+            </table></div>
           </div>
         </div>
       </div>
@@ -398,10 +398,10 @@ export default async function EconomySection({ view, sp, user }) {
       <div>
         <SectionHeader title="Economy Alerts" sub="Anomaly detection using current economy data" back="economy" />
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16, marginBottom: 16 }}>
           <div className="panel no-hover" style={{ padding: 20 }}>
             <h4 style={{ fontSize: 13, fontWeight: 700, marginBottom: 12 }}>Top Credit Holders</h4>
-            <table className="table-panel">
+            <div className="adm-table-wrap"><table className="table-panel">
               <thead><tr><th>User</th><th>Credits</th><th>Duckets</th></tr></thead>
               <tbody>
                 {topRich.map((u, i) => (
@@ -412,12 +412,12 @@ export default async function EconomySection({ view, sp, user }) {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
           </div>
 
           <div className="panel no-hover" style={{ padding: 20 }}>
             <h4 style={{ fontSize: 13, fontWeight: 700, marginBottom: 12 }}>Most Items in Inventory</h4>
-            <table className="table-panel">
+            <div className="adm-table-wrap"><table className="table-panel">
               <thead><tr><th>User</th><th>Credits</th><th>Items</th></tr></thead>
               <tbody>
                 {topGainers.map((u, i) => (
@@ -428,7 +428,7 @@ export default async function EconomySection({ view, sp, user }) {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
           </div>
         </div>
 
@@ -437,13 +437,13 @@ export default async function EconomySection({ view, sp, user }) {
             <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Install <code>sql/ocms_missing_tables.sql</code> to enable transaction anomaly tracking via cms_credit_log.</p>
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16 }}>
             <div className="panel no-hover" style={{ padding: 20 }}>
               <h4 style={{ fontSize: 13, fontWeight: 700, marginBottom: 12 }}>Large Transactions (≥1,000 credits)</h4>
               {bigTransactions.length === 0 ? (
                 <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>No large transactions logged.</p>
               ) : (
-                <table className="table-panel">
+                <div className="adm-table-wrap"><table className="table-panel">
                   <thead><tr><th>Time</th><th>Player</th><th>Amount</th><th>By</th></tr></thead>
                   <tbody>
                     {bigTransactions.map((l, i) => (
@@ -455,7 +455,7 @@ export default async function EconomySection({ view, sp, user }) {
                       </tr>
                     ))}
                   </tbody>
-                </table>
+                </table></div>
               )}
             </div>
 
@@ -464,7 +464,7 @@ export default async function EconomySection({ view, sp, user }) {
               {recentLarge === null || recentLarge.length === 0 ? (
                 <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>No credit log entries today.</p>
               ) : (
-                <table className="table-panel">
+                <div className="adm-table-wrap"><table className="table-panel">
                   <thead><tr><th>Player</th><th>Gained</th><th>Spent</th></tr></thead>
                   <tbody>
                     {recentLarge.map((l, i) => (
@@ -475,7 +475,7 @@ export default async function EconomySection({ view, sp, user }) {
                       </tr>
                     ))}
                   </tbody>
-                </table>
+                </table></div>
               )}
             </div>
           </div>
@@ -508,7 +508,7 @@ export default async function EconomySection({ view, sp, user }) {
       {shopItems.length === 0 ? (
         <p style={{ color: 'var(--text-muted)', fontSize: 12, textAlign: 'center', padding: 20 }}>No shop items yet.</p>
       ) : (
-        <table className="table-panel">
+        <div className="adm-table-wrap"><table className="table-panel">
           <thead><tr><th>Name</th><th>Category</th><th>Price</th><th>Currency</th><th>Active</th><th></th></tr></thead>
           <tbody>
             {shopItems.map(i => (
@@ -525,7 +525,7 @@ export default async function EconomySection({ view, sp, user }) {
               </tr>
             ))}
           </tbody>
-        </table>
+        </table></div>
       )}
     </div>
   );
@@ -570,17 +570,17 @@ async function ShopItemForm({ item }) {
       </div>
       <form action={saveAction}>
         {item && <input type="hidden" name="id" value={item.id} />}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16, marginBottom: 16 }}>
           <div><label style={labelStyle}>Name *</label><input type="text" name="name" defaultValue={item?.name||''} required /></div>
           <div><label style={labelStyle}>Category</label><input type="text" name="category" defaultValue={item?.category||'General'} /></div>
         </div>
         <div style={{ marginBottom: 16 }}><label style={labelStyle}>Description</label><textarea name="description" defaultValue={item?.description||''} rows={3} /></div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16, marginBottom: 16 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 16, marginBottom: 16 }}>
           <div><label style={labelStyle}>Price</label><input type="number" name="price" defaultValue={item?.price||0} min={0} /></div>
           <div><label style={labelStyle}>Currency</label><select name="currency" defaultValue={item?.currency||'credits'}><option value="credits">Credits</option><option value="pixels">Duckets</option><option value="points">Diamonds</option></select></div>
           <div><label style={labelStyle}>Give Badge</label><input type="text" name="give_badge" defaultValue={item?.give_badge||''} placeholder="BADGE_CODE" /></div>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16, marginBottom: 16 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 16, marginBottom: 16 }}>
           <div><label style={labelStyle}>Give Credits</label><input type="number" name="give_credits" defaultValue={item?.give_credits||0} min={0} /></div>
           <div><label style={labelStyle}>Give Duckets</label><input type="number" name="give_pixels" defaultValue={item?.give_pixels||0} min={0} /></div>
           <div><label style={labelStyle}>Give Diamonds</label><input type="number" name="give_points" defaultValue={item?.give_points||0} min={0} /></div>

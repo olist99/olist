@@ -34,7 +34,7 @@ export default async function ModerationSection({ view, sp, user }) {
           {tickets.length === 0 ? (
             <p style={{ color: 'var(--text-muted)', fontSize: 12, textAlign: 'center', padding: 20 }}>No open tickets. All clear!</p>
           ) : (
-            <table className="table-panel">
+            <div className="adm-table-wrap"><table className="table-panel">
               <thead><tr><th>#</th><th>User</th><th>Subject</th><th>Category</th><th>Status</th><th>Updated</th><th></th></tr></thead>
               <tbody>
                 {tickets.map(t => (
@@ -55,7 +55,7 @@ export default async function ModerationSection({ view, sp, user }) {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
           )}
         </div>
       </div>
@@ -115,7 +115,7 @@ export default async function ModerationSection({ view, sp, user }) {
             {enterLogs.length === 0 ? (
               <p style={{ color: 'var(--text-muted)', fontSize: 12, textAlign: 'center', padding: 20 }}>No room entry logs found.</p>
             ) : (
-              <table className="table-panel">
+              <div className="adm-table-wrap"><table className="table-panel">
                 <thead><tr><th>User</th><th>Room</th><th>Time</th></tr></thead>
                 <tbody>
                   {enterLogs.map((l, i) => (
@@ -126,7 +126,7 @@ export default async function ModerationSection({ view, sp, user }) {
                     </tr>
                   ))}
                 </tbody>
-              </table>
+              </table></div>
             )}
           </div>
         ) : (
@@ -138,7 +138,7 @@ export default async function ModerationSection({ view, sp, user }) {
               {chatByRoom.length === 0 ? (
                 <p style={{ color: 'var(--text-muted)', fontSize: 12, textAlign: 'center', padding: 20 }}>No chat data found.</p>
               ) : (
-                <table className="table-panel">
+                <div className="adm-table-wrap"><table className="table-panel">
                   <thead><tr><th>Room</th><th>Messages</th><th>Unique Users</th><th>Last Activity</th><th></th></tr></thead>
                   <tbody>
                     {chatByRoom.map((r, i) => (
@@ -151,7 +151,7 @@ export default async function ModerationSection({ view, sp, user }) {
                       </tr>
                     ))}
                   </tbody>
-                </table>
+                </table></div>
               )}
             </div>
           </div>
@@ -209,7 +209,7 @@ export default async function ModerationSection({ view, sp, user }) {
             <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Run <code>sql/ocms_missing_tables.sql</code> to create the table.</p>
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: '280px 1fr', gap: 16, marginBottom: 16 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'min(280px, 100%) 1fr', flexWrap: 'wrap', gap: 16, marginBottom: 16 }}>
             <div className="panel no-hover" style={{ padding: 20 }}>
               <h4 style={{ fontSize: 13, fontWeight: 700, marginBottom: 14 }}>Issue Warning</h4>
               <form action="/admin" method="GET" style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
@@ -249,7 +249,7 @@ export default async function ModerationSection({ view, sp, user }) {
               {warnings.length === 0 ? (
                 <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>{targetUser ? 'No warnings issued to this player.' : 'No warnings issued yet.'}</p>
               ) : (
-                <table className="table-panel">
+                <div className="adm-table-wrap"><table className="table-panel">
                   <thead><tr><th>Player</th><th>Reason</th><th>Issued By</th><th>Date</th></tr></thead>
                   <tbody>
                     {warnings.map((w, i) => (
@@ -261,7 +261,7 @@ export default async function ModerationSection({ view, sp, user }) {
                       </tr>
                     ))}
                   </tbody>
-                </table>
+                </table></div>
               )}
             </div>
           </div>
@@ -282,7 +282,7 @@ export default async function ModerationSection({ view, sp, user }) {
           {bans.length === 0 ? (
             <p style={{ color: 'var(--text-muted)', fontSize: 12, textAlign: 'center', padding: 20 }}>No bans found.</p>
           ) : (
-            <table className="table-panel">
+            <div className="adm-table-wrap"><table className="table-panel">
               <thead><tr><th>User / Value</th><th>Reason</th><th>Type</th><th>Expire</th><th>Added By</th></tr></thead>
               <tbody>
                 {bans.map((b, i) => (
@@ -297,7 +297,7 @@ export default async function ModerationSection({ view, sp, user }) {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
           )}
         </div>
       </div>
@@ -349,7 +349,7 @@ export default async function ModerationSection({ view, sp, user }) {
     return (
       <div>
         <SectionHeader title="Word Filter Manager" sub={`${words.length} filtered words`} back="moderation" />
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 16 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'min(1fr, 100%) 2fr', flexWrap: 'wrap', gap: 16 }}>
           <div className="panel no-hover" style={{ padding: 20 }}>
             <h4 style={{ fontSize: 13, fontWeight: 700, marginBottom: 14 }}>Add Filtered Word</h4>
             <form action={addWordAction}>
@@ -367,7 +367,7 @@ export default async function ModerationSection({ view, sp, user }) {
           <div className="panel no-hover" style={{ padding: 20 }}>
             <h4 style={{ fontSize: 13, fontWeight: 700, marginBottom: 14 }}>Filtered Words ({words.length})</h4>
             {words.length === 0 ? <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>No filtered words yet.</p> : (
-              <table className="table-panel">
+              <div className="adm-table-wrap"><table className="table-panel">
                 <thead><tr><th>Word</th><th>Replacement</th><th>Active</th><th></th></tr></thead>
                 <tbody>
                   {words.map(w => (
@@ -384,7 +384,7 @@ export default async function ModerationSection({ view, sp, user }) {
                     </tr>
                   ))}
                 </tbody>
-              </table>
+              </table></div>
             )}
           </div>
         </div>
@@ -434,7 +434,7 @@ export default async function ModerationSection({ view, sp, user }) {
         {recentFlood.length > 0 && (
           <div className="panel no-hover" style={{ padding: 20, marginBottom: 12, border: '1px solid rgba(239,88,86,0.3)' }}>
             <h4 style={{ fontSize: 13, fontWeight: 700, marginBottom: 12, color: '#EF5856' }}>Active Flood Alert (last 5 min)</h4>
-            <table className="table-panel">
+            <div className="adm-table-wrap"><table className="table-panel">
               <thead><tr><th>User</th><th>Room</th><th>Messages (5 min)</th><th></th></tr></thead>
               <tbody>
                 {recentFlood.map((r, i) => (
@@ -446,17 +446,17 @@ export default async function ModerationSection({ view, sp, user }) {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
           </div>
         )}
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16 }}>
           <div className="panel no-hover" style={{ padding: 20 }}>
             <h4 style={{ fontSize: 13, fontWeight: 700, marginBottom: 12 }}>Top Chatters (last hour)</h4>
             {topSpammers.length === 0 ? (
               <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>No chat data in the last hour.</p>
             ) : (
-              <table className="table-panel">
+              <div className="adm-table-wrap"><table className="table-panel">
                 <thead><tr><th>#</th><th>User</th><th>Messages</th></tr></thead>
                 <tbody>
                   {topSpammers.map((s, i) => (
@@ -467,7 +467,7 @@ export default async function ModerationSection({ view, sp, user }) {
                     </tr>
                   ))}
                 </tbody>
-              </table>
+              </table></div>
             )}
           </div>
 
@@ -476,7 +476,7 @@ export default async function ModerationSection({ view, sp, user }) {
             {repeatMessages.length === 0 ? (
               <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>No repeated messages detected today.</p>
             ) : (
-              <table className="table-panel">
+              <div className="adm-table-wrap"><table className="table-panel">
                 <thead><tr><th>Message</th><th>Times</th><th>Last Sender</th></tr></thead>
                 <tbody>
                   {repeatMessages.map((m, i) => (
@@ -487,7 +487,7 @@ export default async function ModerationSection({ view, sp, user }) {
                     </tr>
                   ))}
                 </tbody>
-              </table>
+              </table></div>
             )}
           </div>
         </div>
@@ -537,7 +537,7 @@ export default async function ModerationSection({ view, sp, user }) {
         {logs.length === 0 ? (
           <p style={{ color: 'var(--text-muted)', fontSize: 12, textAlign: 'center', padding: 20 }}>No chat logs found. Try adjusting filters.</p>
         ) : (
-          <table className="table-panel">
+          <div className="adm-table-wrap"><table className="table-panel">
             <thead><tr><th>User</th><th>Room</th><th>Message</th><th>Time</th></tr></thead>
             <tbody>
               {logs.map((log, i) => (
@@ -549,7 +549,7 @@ export default async function ModerationSection({ view, sp, user }) {
                 </tr>
               ))}
             </tbody>
-          </table>
+          </table></div>
         )}
       </div>
     </div>

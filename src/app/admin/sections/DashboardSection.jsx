@@ -43,7 +43,7 @@ export default async function DashboardSection({ view, sp, user }) {
           {list.length === 0 ? (
             <p style={{ color: 'var(--text-muted)', fontSize: 12, textAlign: 'center', padding: 20 }}>No users online right now.</p>
           ) : (
-            <table className="table-panel">
+            <div className="adm-table-wrap"><table className="table-panel">
               <thead><tr><th>Avatar</th><th>Username</th><th>Rank</th><th>Actions</th></tr></thead>
               <tbody>
                 {list.map(u => (
@@ -55,7 +55,7 @@ export default async function DashboardSection({ view, sp, user }) {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
           )}
         </div>
       </div>
@@ -74,7 +74,7 @@ export default async function DashboardSection({ view, sp, user }) {
           {list.length === 0 ? (
             <p style={{ color: 'var(--text-muted)', fontSize: 12, textAlign: 'center', padding: 20 }}>No new registrations in the last 24 hours.</p>
           ) : (
-            <table className="table-panel">
+            <div className="adm-table-wrap"><table className="table-panel">
               <thead><tr><th>ID</th><th>Username</th><th>Email</th><th>IP</th><th>Joined</th><th></th></tr></thead>
               <tbody>
                 {list.map(u => (
@@ -88,7 +88,7 @@ export default async function DashboardSection({ view, sp, user }) {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
           )}
         </div>
       </div>
@@ -141,7 +141,7 @@ export default async function DashboardSection({ view, sp, user }) {
             {gotwUsers.length === 0 ? (
               <p style={{ color: 'var(--text-muted)', fontSize: 12, textAlign: 'center', padding: 20 }}>No players have GOTW points.</p>
             ) : (
-              <table className="table-panel">
+              <div className="adm-table-wrap"><table className="table-panel">
                 <thead><tr><th>ID</th><th>Username</th><th>GOTW</th></tr></thead>
                 <tbody>
                   {gotwUsers.map(u => (
@@ -152,7 +152,7 @@ export default async function DashboardSection({ view, sp, user }) {
                     </tr>
                   ))}
                 </tbody>
-              </table>
+              </table></div>
             )}
           </div>
         </div>
@@ -259,7 +259,7 @@ export default async function DashboardSection({ view, sp, user }) {
               {creditLog.length === 0 ? (
                 <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>No transactions logged today yet. Credit changes via Admin → User Profile will appear here.</p>
               ) : (
-                <table className="table-panel">
+                <div className="adm-table-wrap"><table className="table-panel">
                   <thead><tr><th>Time</th><th>Player</th><th>Currency</th><th>Amount</th><th>After</th><th>Reason</th><th>By</th></tr></thead>
                   <tbody>
                     {creditLog.map((l, i) => (
@@ -274,7 +274,7 @@ export default async function DashboardSection({ view, sp, user }) {
                       </tr>
                     ))}
                   </tbody>
-                </table>
+                </table></div>
               )}
             </div>
           </div>
@@ -283,7 +283,7 @@ export default async function DashboardSection({ view, sp, user }) {
         {/* Top credit holders always shown */}
         <div className="panel no-hover" style={{ padding: 20 }}>
           <h4 style={{ fontSize: 13, fontWeight: 700, marginBottom: 14 }}>Top Credit Holders</h4>
-          <table className="table-panel">
+          <div className="adm-table-wrap"><table className="table-panel">
             <thead><tr><th>Username</th><th>Credits</th><th>Duckets</th><th>Diamonds</th></tr></thead>
             <tbody>
               {topCredits.map(u => (
@@ -295,7 +295,7 @@ export default async function DashboardSection({ view, sp, user }) {
                 </tr>
               ))}
             </tbody>
-          </table>
+          </table></div>
         </div>
       </div>
     );
@@ -316,7 +316,7 @@ export default async function DashboardSection({ view, sp, user }) {
     return (
       <div>
         <SectionHeader title="Marketplace Volume (24h)" sub={`${parseInt(creditVol).toLocaleString()} credits · ${parseInt(diamondVol).toLocaleString()} diamonds traded`} back="dashboard" />
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 12, marginBottom: 12 }}>
           <div className="panel no-hover" style={{ padding: '14px 18px' }}>
             <div style={{ fontSize: 20, fontWeight: 800, color: '#a442c2' }}>{parseInt(creditVol).toLocaleString()}<span style={{ fontSize: 12, marginLeft: 4 }}>credits</span></div>
             <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>Credits traded (24h)</div>
@@ -330,7 +330,7 @@ export default async function DashboardSection({ view, sp, user }) {
           {recent.length === 0 ? (
             <p style={{ color: 'var(--text-muted)', fontSize: 12, textAlign: 'center', padding: 20 }}>No marketplace sales in the last 24 hours.</p>
           ) : (
-            <table className="table-panel">
+            <div className="adm-table-wrap"><table className="table-panel">
               <thead><tr><th>Item</th><th>Seller</th><th>Price</th><th>Currency</th><th>Sold At</th></tr></thead>
               <tbody>
                 {recent.map((r, i) => (
@@ -343,7 +343,7 @@ export default async function DashboardSection({ view, sp, user }) {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
           )}
         </div>
       </div>
@@ -375,7 +375,7 @@ export default async function DashboardSection({ view, sp, user }) {
     return (
       <div>
         <SectionHeader title="Auction House" sub={`${active.length} active auctions · ${topBids} bids placed (24h)`} back="dashboard" />
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 12, marginBottom: 12 }}>
           <div className="panel no-hover" style={{ padding: '14px 18px' }}>
             <div style={{ fontSize: 20, fontWeight: 800, color: '#a0b4ff' }}>{active.length}</div>
             <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>Active auctions</div>
@@ -388,7 +388,7 @@ export default async function DashboardSection({ view, sp, user }) {
         {active.length > 0 && (
           <div className="panel no-hover" style={{ padding: 20, marginBottom: 12 }}>
             <h4 style={{ fontSize: 13, fontWeight: 700, marginBottom: 12 }}>Active Auctions</h4>
-            <table className="table-panel">
+            <div className="adm-table-wrap"><table className="table-panel">
               <thead><tr><th>Title</th><th>Type</th><th>Top Bid</th><th>Bidder</th><th>Ends</th></tr></thead>
               <tbody>
                 {active.map(a => (
@@ -401,13 +401,13 @@ export default async function DashboardSection({ view, sp, user }) {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
           </div>
         )}
         {recent.length > 0 && (
           <div className="panel no-hover" style={{ padding: 20 }}>
             <h4 style={{ fontSize: 13, fontWeight: 700, marginBottom: 12 }}>Recent Bids (24h)</h4>
-            <table className="table-panel">
+            <div className="adm-table-wrap"><table className="table-panel">
               <thead><tr><th>Auction</th><th>Bidder</th><th>Amount</th><th>Currency</th><th>Time</th></tr></thead>
               <tbody>
                 {recent.map((b, i) => (
@@ -420,7 +420,7 @@ export default async function DashboardSection({ view, sp, user }) {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
           </div>
         )}
         {active.length === 0 && recent.length === 0 && (
@@ -466,10 +466,10 @@ export default async function DashboardSection({ view, sp, user }) {
             <p style={{ color: 'var(--text-muted)', fontSize: 12 }}>No forum activity in the last 24 hours.</p>
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 12, marginBottom: 12 }}>
             <div className="panel no-hover" style={{ padding: 20 }}>
               <h4 style={{ fontSize: 13, fontWeight: 700, marginBottom: 12 }}>Top Posters (24h)</h4>
-              <table className="table-panel">
+              <div className="adm-table-wrap"><table className="table-panel">
                 <thead><tr><th>Player</th><th>Posts</th></tr></thead>
                 <tbody>
                   {topPosters.map((p, i) => (
@@ -479,11 +479,11 @@ export default async function DashboardSection({ view, sp, user }) {
                     </tr>
                   ))}
                 </tbody>
-              </table>
+              </table></div>
             </div>
             <div className="panel no-hover" style={{ padding: 20 }}>
               <h4 style={{ fontSize: 13, fontWeight: 700, marginBottom: 12 }}>Most Active Threads (24h)</h4>
-              <table className="table-panel">
+              <div className="adm-table-wrap"><table className="table-panel">
                 <thead><tr><th>Thread</th><th>Replies</th></tr></thead>
                 <tbody>
                   {threadActivity.map((t, i) => (
@@ -493,7 +493,7 @@ export default async function DashboardSection({ view, sp, user }) {
                     </tr>
                   ))}
                 </tbody>
-              </table>
+              </table></div>
             </div>
           </div>
         )}
@@ -518,7 +518,7 @@ export default async function DashboardSection({ view, sp, user }) {
             {plugins.length === 0 ? (
               <p style={{ fontSize: 12, color: 'var(--text-muted)', textAlign: 'center', padding: 20 }}>No plugins installed.</p>
             ) : (
-              <table className="table-panel">
+              <div className="adm-table-wrap"><table className="table-panel">
                 <thead><tr><th>Plugin</th><th>Version</th><th>Status</th></tr></thead>
                 <tbody>
                   {plugins.map((p, i) => (
@@ -529,7 +529,7 @@ export default async function DashboardSection({ view, sp, user }) {
                     </tr>
                   ))}
                 </tbody>
-              </table>
+              </table></div>
             )}
           </div>
         )}
@@ -549,7 +549,7 @@ export default async function DashboardSection({ view, sp, user }) {
           {rooms.length === 0 ? (
             <p style={{ color: 'var(--text-muted)', fontSize: 12, textAlign: 'center', padding: 20 }}>No rooms occupied right now.</p>
           ) : (
-            <table className="table-panel">
+            <div className="adm-table-wrap"><table className="table-panel">
               <thead><tr><th>Room Name</th><th>Owner</th><th>Players</th><th>Score</th><th>State</th></tr></thead>
               <tbody>
                 {rooms.map(r => (
@@ -562,7 +562,7 @@ export default async function DashboardSection({ view, sp, user }) {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
           )}
         </div>
       </div>
@@ -581,7 +581,7 @@ export default async function DashboardSection({ view, sp, user }) {
           {tickets.length === 0 ? (
             <p style={{ color: 'var(--text-muted)', fontSize: 12, textAlign: 'center', padding: 20 }}>No open tickets right now.</p>
           ) : (
-            <table className="table-panel">
+            <div className="adm-table-wrap"><table className="table-panel">
               <thead><tr><th>#</th><th>User</th><th>Subject</th><th>Category</th><th>Opened</th><th></th></tr></thead>
               <tbody>
                 {tickets.map(t => (
@@ -595,7 +595,7 @@ export default async function DashboardSection({ view, sp, user }) {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
           )}
         </div>
       </div>
@@ -619,7 +619,7 @@ export default async function DashboardSection({ view, sp, user }) {
   return (
     <div>
       {/* Stat widgets */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 12, marginBottom: 16 }}>
         {widgets.map((w, i) => (
           <Link key={i} href={`/admin?tab=dashboard&view=${w.view}`} className="panel no-hover" style={{ padding: '16px 18px', textDecoration: 'none', display: 'block', transition: 'background .12s' }}>
             <div style={{ fontSize: 22, fontWeight: 800, color: w.color, marginBottom: 2 }}>
@@ -633,7 +633,7 @@ export default async function DashboardSection({ view, sp, user }) {
       </div>
 
       {/* Quick access */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 12, marginBottom: 12 }}>
         <div className="panel no-hover" style={{ padding: '14px 18px' }}>
           <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 10 }}>Quick Links</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>

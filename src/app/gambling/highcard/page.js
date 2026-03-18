@@ -2,6 +2,8 @@ import { redirect } from 'next/navigation';
 import { getCurrentUser } from '@/lib/auth';
 import HighCardGame from './HighCardGame';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata = { title: 'High Card' };
 
 export default async function HighCardPage() {

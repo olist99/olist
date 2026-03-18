@@ -3,6 +3,8 @@ import { query, queryOne, queryScalar } from '@/lib/db';
 import { formatNumber, timeAgo, CURRENCY_ICONS } from '@/lib/utils';
 import PriceHistory from '@/components/PriceHistory';
 
+export const dynamic = 'force-dynamic';
+
 const CIcon = ({ type, size = 14 }) => <img src={CURRENCY_ICONS[type] || '/images/coin.png'} alt="" style={{ width: size, height: size, imageRendering: 'pixelated', verticalAlign: 'middle' }} />;
 export async function generateMetadata({ searchParams }) {
   const sp = await searchParams;

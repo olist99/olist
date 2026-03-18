@@ -7,6 +7,8 @@ import { formatNumber, timeAgo, RANK_COLORS, CURRENCY_ICONS } from '@/lib/utils'
 const CIcon = ({ type, size = 14 }) => <img src={CURRENCY_ICONS[type] || '/images/coin.png'} alt="" style={{ width: size, height: size, imageRendering: 'pixelated', verticalAlign: 'middle' }} />;
 import PriceHistory from '@/components/PriceHistory';
 
+export const dynamic = 'force-dynamic';
+
 
 const CURRENCY_LABEL = { credits: 'Credits', pixels: 'Duckets', points: 'Diamonds' };
 

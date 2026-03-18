@@ -22,8 +22,14 @@ function FurniImg({ name, size = 64 }) {
   );
 }
 
+function parseUtc(dateStr) {
+  if (!dateStr) return new Date(NaN);
+  const s = dateStr.toString().trim().replace(' UTC', '').replace(' ', 'T');
+  return new Date(s.endsWith('Z') ? s : s + 'Z');
+}
+
 function timeLeft(endTime) {
-  const diff = new Date(endTime) - Date.now();
+  const diff = parseUtc(endTime) - Date.now();
   if (diff <= 0) return 'Ended';
   const h = Math.floor(diff / 3600000);
   const m = Math.floor((diff % 3600000) / 60000);
@@ -42,7 +48,7 @@ function AuctionCard({ auction, userId, userRank, onBid }) {
   const [bids, setBids] = useState([]);
   const [tick, setTick] = useState(0);
 
-  const isEnded = new Date(auction.end_time) <= Date.now();
+  const isEnded = parseUtc(auction.end_time) <= Date.now();
   const isOwner = auction.created_by === userId;
   const minBid = auction.top_bid ? auction.top_bid + 1 : auction.start_bid;
 
@@ -103,7 +109,7 @@ function AuctionCard({ auction, userId, userRank, onBid }) {
   };
 
   const tl = timeLeft(auction.end_time);
-  const isUrgent = !isEnded && new Date(auction.end_time) - Date.now() < 3600000;
+  const isUrgent = !isEnded && parseUtc(auction.end_time) - Date.now() < 3600000;
 
   return (
     <div style={{ background: 'var(--panel-bg)', border: `1px solid ${auction.is_official ? 'rgba(52,189,89,0.3)' : 'var(--border)'}`, borderRadius: 'var(--radius)', overflow: 'hidden' }}>
@@ -111,7 +117,7 @@ function AuctionCard({ auction, userId, userRank, onBid }) {
       <div style={{ padding: '10px 14px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
           {auction.is_official && <span style={{ fontSize: 9, fontWeight: 800, padding: '2px 7px', borderRadius: 20, background: 'rgba(52,189,89,0.15)', color: 'var(--green)', flexShrink: 0 }}>OFFICIAL</span>}
-          <span style={{ fontSize: 13, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{auction.title}</span>
+          <span style={{ fontSize: 13, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{(auction.title || '').replace(/^\d+\s+/, '')}</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
           <div style={{ fontSize: 11, fontWeight: 700, color: isEnded ? 'var(--text-muted)' : isUrgent ? '#EF5856' : 'var(--green)', padding: '2px 8px', borderRadius: 20, background: isEnded ? 'rgba(255,255,255,0.04)' : isUrgent ? 'rgba(239,88,86,0.1)' : 'rgba(52,189,89,0.1)', whiteSpace: 'nowrap' }}>
@@ -334,10 +340,12 @@ export default function AuctionClient({ userId, userRank, initialAuctions }) {
   const handleCreateOfficialAuction = async () => {
     setOLoading(true); setOMsg(null);
     try {
+      // datetime-local gives local time — convert to UTC for storage
+      const endTimeUtc = oEnd ? new Date(oEnd).toISOString().slice(0, 19).replace('T', ' ') : '';
       const res = await fetch('/api/auction', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'create_official', title: oTitle, description: oDesc, start_bid: parseInt(oBid), currency: oCurrency, end_time: oEnd, item_name: oItemName || null }),
+        body: JSON.stringify({ action: 'create_official', title: oTitle, description: oDesc, start_bid: parseInt(oBid), currency: oCurrency, end_time: endTimeUtc, item_name: oItemName || null }),
       });
       const data = await res.json();
       if (data.ok) {

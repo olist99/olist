@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import { query, queryOne } from '@/lib/db';
@@ -128,7 +129,7 @@ export async function POST() {
   );
 
   // Notify user
-  sendNotification(user.id, {
+  await sendNotification(user.id, {
     type: 'daily_reward',
     title: `Day ${streakDay} reward claimed!`,
     message: `+${reward.credits} credits${reward.pixels ? `, +${reward.pixels} duckets` : ''}${reward.points ? `, +${reward.points} diamonds` : ''}`,

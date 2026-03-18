@@ -4,6 +4,8 @@ import { getCurrentUser } from '@/lib/auth';
 import { query, queryOne } from '@/lib/db';
 import ForumThreadList from '@/components/ForumThreadList'; // client component
 
+export const dynamic = 'force-dynamic';
+
 export async function generateMetadata({ params }) {
   return { title: 'Forum' };
 }

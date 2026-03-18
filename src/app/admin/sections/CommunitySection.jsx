@@ -77,7 +77,7 @@ export default async function CommunitySection({ view, sp, user }) {
           {referrals.length === 0 ? (
             <p style={{ color: 'var(--text-muted)', fontSize: 12, textAlign: 'center', padding: 20 }}>No referrals yet.</p>
           ) : (
-            <table className="table-panel">
+            <div className="adm-table-wrap"><table className="table-panel">
               <thead><tr><th>Referrer</th><th>New User</th><th>Date</th></tr></thead>
               <tbody>
                 {referrals.map(r => (
@@ -88,7 +88,7 @@ export default async function CommunitySection({ view, sp, user }) {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
           )}
         </div>
       </div>
@@ -189,7 +189,7 @@ export default async function CommunitySection({ view, sp, user }) {
             <Link href="/forum" className="btn btn-secondary btn-sm" style={{ fontSize: 10 }}>View Forum ↗</Link>
           </div>
           {threads.length === 0 ? <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>No threads yet.</p> : (
-            <table className="table-panel">
+            <div className="adm-table-wrap"><table className="table-panel">
               <thead><tr><th>Title</th><th>Author</th><th>Category</th><th>Replies</th><th>Status</th><th></th></tr></thead>
               <tbody>
                 {threads.map(t => (
@@ -223,14 +223,14 @@ export default async function CommunitySection({ view, sp, user }) {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
           )}
         </div>
 
         {posts !== null && posts.length > 0 && (
           <div className="panel no-hover" style={{ padding: 20 }}>
             <h4 style={{ fontSize: 13, fontWeight: 700, marginBottom: 14 }}>Recent Posts ({posts.length})</h4>
-            <table className="table-panel">
+            <div className="adm-table-wrap"><table className="table-panel">
               <thead><tr><th>Author</th><th>Thread</th><th>Content</th><th>Date</th><th></th></tr></thead>
               <tbody>
                 {posts.map(p => (
@@ -248,7 +248,7 @@ export default async function CommunitySection({ view, sp, user }) {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
           </div>
         )}
       </div>
@@ -293,7 +293,7 @@ export default async function CommunitySection({ view, sp, user }) {
           </div>
         ) : (
           <div className="panel no-hover" style={{ padding: 20 }}>
-            <table className="table-panel">
+            <div className="adm-table-wrap"><table className="table-panel">
               <thead><tr><th>Reporter</th><th>Type</th><th>Target</th><th>Reason</th><th>Date</th><th></th></tr></thead>
               <tbody>
                 {reports.map(r => (
@@ -320,7 +320,7 @@ export default async function CommunitySection({ view, sp, user }) {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
           </div>
         )}
       </div>
@@ -363,7 +363,7 @@ export default async function CommunitySection({ view, sp, user }) {
           </div>
         ) : (
           <div className="panel no-hover" style={{ padding: 20 }}>
-            <table className="table-panel">
+            <div className="adm-table-wrap"><table className="table-panel">
               <thead><tr><th>Written By</th><th>On Profile</th><th>Message</th><th>Date</th><th></th></tr></thead>
               <tbody>
                 {entries.map(e => (
@@ -381,7 +381,7 @@ export default async function CommunitySection({ view, sp, user }) {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
           </div>
         )}
       </div>
@@ -438,7 +438,7 @@ export default async function CommunitySection({ view, sp, user }) {
             <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Run <code>sql/ocms_missing_tables.sql</code> to create the table.</p>
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: '280px 1fr', gap: 16 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'min(280px, 100%) 1fr', flexWrap: 'wrap', gap: 16 }}>
             <div className="panel no-hover" style={{ padding: 20 }}>
               <h4 style={{ fontSize: 13, fontWeight: 700, marginBottom: 14 }}>Create Contest</h4>
               <form action={createContestAction}>
@@ -467,7 +467,7 @@ export default async function CommunitySection({ view, sp, user }) {
               {contests.length === 0 ? (
                 <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>No contests yet. Create one!</p>
               ) : (
-                <table className="table-panel">
+                <div className="adm-table-wrap"><table className="table-panel">
                   <thead><tr><th>Title</th><th>Prize</th><th>Entries</th><th>Ends</th><th>Status</th><th></th></tr></thead>
                   <tbody>
                     {contests.map(c => (
@@ -488,7 +488,7 @@ export default async function CommunitySection({ view, sp, user }) {
                       </tr>
                     ))}
                   </tbody>
-                </table>
+                </table></div>
               )}
             </div>
           </div>
@@ -525,7 +525,7 @@ export default async function CommunitySection({ view, sp, user }) {
           <h3 style={{ fontSize: 16, fontWeight: 700 }}>News Articles ({news.length})</h3>
           <Link href="/admin?tab=community&view=news-create" className="btn btn-primary btn-sm">+ Create Article</Link>
         </div>
-        <table className="table-panel">
+        <div className="adm-table-wrap"><table className="table-panel">
           <thead><tr><th>ID</th><th>Title</th><th>Tag</th><th>Author</th><th>Pinned</th><th>Views</th><th>Date</th><th></th></tr></thead>
           <tbody>
             {news.map(n => (
@@ -554,7 +554,7 @@ export default async function CommunitySection({ view, sp, user }) {
             ))}
             {news.length === 0 && <tr><td colSpan={8} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 30 }}>No news articles yet.</td></tr>}
           </tbody>
-        </table>
+        </table></div>
       </div>
     </div>
   );
@@ -569,7 +569,7 @@ function NewsForm({ action, article }) {
       </div>
       <form action={action}>
         {article && <input type="hidden" name="id" value={article.id} />}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16, marginBottom: 16 }}>
           <div><label style={labelStyle}>Title *</label><input type="text" name="title" defaultValue={article?.title||''} required /></div>
           <div><label style={labelStyle}>Tag</label>
             <select name="tag" defaultValue={article?.tag||'NEWS'}>

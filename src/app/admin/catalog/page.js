@@ -2,6 +2,8 @@ import { redirect } from 'next/navigation';
 import { getCurrentUser } from '@/lib/auth';
 import CatalogManager from './CatalogManager';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata = { title: 'Catalog Manager' };
 
 export default async function CatalogPage() {

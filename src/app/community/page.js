@@ -4,6 +4,8 @@ import { getCurrentUser } from '@/lib/auth';
 import { query, queryScalar } from '@/lib/db';
 import { formatNumber, timeAgo } from '@/lib/utils';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata = { title: 'Community' };
 
 export default async function CommunityPage() {
@@ -107,13 +109,14 @@ export default async function CommunityPage() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {events.map(e => {
                   const now = new Date();
-                  const start = e.event_date ? new Date(e.event_date) : null;
-                  const end = e.end_date ? new Date(e.end_date) : null;
+                  const parseUtcStr = (s) => { if (!s) return null; const t = s.toString().trim().replace(' UTC','').replace(' ','T'); return new Date(t.endsWith('Z') ? t : t+'Z'); };
+                  const start = e.event_date ? parseUtcStr(e.event_date) : null;
+                  const end = e.end_date ? parseUtcStr(e.end_date) : null;
                   const isHappeningNow = start && now >= start && (!end || now <= end);
                   const isFinished = end && now > end;
                   const isUpcoming = start && now < start;
                   const borderColor = isHappeningNow ? '#34bd59' : isFinished ? 'var(--text-muted)' : 'var(--green)';
-                  let badgeText = start ? start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' ' + start.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '—';
+                  let badgeText = start ? start.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ' ' + start.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }) : '—';
                   let badgeColor = 'var(--green)'; let badgeBg = 'rgba(52,189,89,0.1)';
                   if (isHappeningNow) { badgeText = 'Happening Now!'; badgeColor = '#34bd59'; badgeBg = 'rgba(52,189,89,0.15)'; }
                   else if (isFinished) { badgeText = 'Finished'; badgeColor = 'var(--text-muted)'; badgeBg = 'rgba(255,255,255,0.04)'; }

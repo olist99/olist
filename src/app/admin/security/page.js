@@ -2,6 +2,8 @@ import { redirect } from 'next/navigation';
 import { getCurrentUser } from '@/lib/auth';
 import SecurityClient from './SecurityClient';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata = { title: 'Security Monitor' };
 
 export default async function SecurityPage() {

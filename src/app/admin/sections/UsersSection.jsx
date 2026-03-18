@@ -40,7 +40,7 @@ export default async function UsersSection({ view, sp, user }) {
         <SectionHeader title="Change Ranks" sub="View and manage staff ranks" back="users" />
         <div className="panel no-hover" style={{ padding: 20 }}>
           <h4 style={{ fontSize: 13, fontWeight: 700, marginBottom: 14 }}>Current Staff ({staffList.length})</h4>
-          <table className="table-panel">
+          <div className="adm-table-wrap"><table className="table-panel">
             <thead><tr><th>Avatar</th><th>Username</th><th>Current Rank</th><th>Status</th><th>Actions</th></tr></thead>
             <tbody>
               {staffList.map(u => (
@@ -53,7 +53,7 @@ export default async function UsersSection({ view, sp, user }) {
                 </tr>
               ))}
             </tbody>
-          </table>
+          </table></div>
         </div>
         <div className="panel no-hover" style={{ padding: 20, marginTop: 12 }}>
           <h4 style={{ fontSize: 13, fontWeight: 700, marginBottom: 10 }}>All Ranks</h4>
@@ -151,7 +151,7 @@ export default async function UsersSection({ view, sp, user }) {
               <Link href="/admin?tab=users&view=give-badges" className="btn btn-secondary btn-sm">Change User</Link>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '280px 1fr', gap: 16 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'min(280px, 100%) 1fr', flexWrap: 'wrap', gap: 16 }}>
               <div className="panel no-hover" style={{ padding: 20 }}>
                 <h4 style={{ fontSize: 13, fontWeight: 700, marginBottom: 14 }}>Give Badge</h4>
                 <form action={giveBadgeAction}>
@@ -203,7 +203,7 @@ export default async function UsersSection({ view, sp, user }) {
           {bans.length === 0 ? (
             <p style={{ color: 'var(--text-muted)', fontSize: 12, textAlign: 'center', padding: 20 }}>No active bans, or bans table not found.</p>
           ) : (
-            <table className="table-panel">
+            <div className="adm-table-wrap"><table className="table-panel">
               <thead><tr><th>User</th><th>Reason</th><th>Type</th><th>Expire</th><th>Banned By</th></tr></thead>
               <tbody>
                 {bans.map((b, i) => (
@@ -216,7 +216,7 @@ export default async function UsersSection({ view, sp, user }) {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
           )}
         </div>
       </div>
@@ -285,7 +285,7 @@ export default async function UsersSection({ view, sp, user }) {
 
         {targetUser && (
           <div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, marginBottom: 16 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 12, marginBottom: 16 }}>
               {[
                 { label: 'Registration IP', val: targetUser.ip_register, mono: true, href: `/admin?tab=users&view=ip-history&ip=${encodeURIComponent(targetUser.ip_register||'')}` },
                 { label: 'Current IP', val: targetUser.ip_current, mono: true, href: `/admin?tab=users&view=ip-history&ip=${encodeURIComponent(targetUser.ip_current||'')}` },
@@ -309,7 +309,7 @@ export default async function UsersSection({ view, sp, user }) {
                 {loginLogs.length === 0 ? (
                   <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>No login entries in login_log.</p>
                 ) : (
-                  <table className="table-panel">
+                  <div className="adm-table-wrap"><table className="table-panel">
                     <thead><tr><th>IP Address</th><th>Time</th></tr></thead>
                     <tbody>
                       {loginLogs.map((l, i) => (
@@ -319,7 +319,7 @@ export default async function UsersSection({ view, sp, user }) {
                         </tr>
                       ))}
                     </tbody>
-                  </table>
+                  </table></div>
                 )}
               </div>
             ) : (
@@ -333,7 +333,7 @@ export default async function UsersSection({ view, sp, user }) {
         {!userId && !search && recentLogins.length > 0 && (
           <div className="panel no-hover" style={{ padding: 20 }}>
             <h4 style={{ fontSize: 13, fontWeight: 700, marginBottom: 14 }}>Recent Activity (Last 50 by last_online)</h4>
-            <table className="table-panel">
+            <div className="adm-table-wrap"><table className="table-panel">
               <thead><tr><th>Avatar</th><th>Username</th><th>Rank</th><th>Current IP</th><th>Last Online</th><th></th></tr></thead>
               <tbody>
                 {recentLogins.map(u => (
@@ -347,7 +347,7 @@ export default async function UsersSection({ view, sp, user }) {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
           </div>
         )}
       </div>
@@ -371,7 +371,7 @@ export default async function UsersSection({ view, sp, user }) {
           {sharedIPs.length === 0 ? (
             <p style={{ color: 'var(--text-muted)', fontSize: 12, textAlign: 'center', padding: 20 }}>No shared IPs detected.</p>
           ) : (
-            <table className="table-panel">
+            <div className="adm-table-wrap"><table className="table-panel">
               <thead><tr><th>IP Address</th><th>Accounts</th><th>Usernames</th><th></th></tr></thead>
               <tbody>
                 {sharedIPs.map((row, i) => (
@@ -383,7 +383,7 @@ export default async function UsersSection({ view, sp, user }) {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
           )}
         </div>
       </div>
@@ -411,7 +411,7 @@ export default async function UsersSection({ view, sp, user }) {
             usersWithIP.length === 0 ? (
               <p style={{ color: 'var(--text-muted)', fontSize: 12 }}>No accounts found for IP: <code>{ip}</code></p>
             ) : (
-              <table className="table-panel">
+              <div className="adm-table-wrap"><table className="table-panel">
                 <thead><tr><th>ID</th><th>Username</th><th>Rank</th><th>Registered</th><th>Status</th><th></th></tr></thead>
                 <tbody>
                   {usersWithIP.map(u => (
@@ -425,7 +425,7 @@ export default async function UsersSection({ view, sp, user }) {
                     </tr>
                   ))}
                 </tbody>
-              </table>
+              </table></div>
             )
           )}
         </div>
@@ -477,13 +477,13 @@ export default async function UsersSection({ view, sp, user }) {
           </p>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16, marginBottom: 16 }}>
           <div className="panel no-hover" style={{ padding: 20 }}>
             <h4 style={{ fontSize: 13, fontWeight: 700, marginBottom: 14 }}>Shared Registration IPs ({sharedRegIP.length})</h4>
             {sharedRegIP.length === 0 ? (
               <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>No shared IPs found.</p>
             ) : (
-              <table className="table-panel">
+              <div className="adm-table-wrap"><table className="table-panel">
                 <thead><tr><th>IP</th><th>Accounts</th><th>Users</th></tr></thead>
                 <tbody>
                   {sharedRegIP.map((row, i) => (
@@ -494,7 +494,7 @@ export default async function UsersSection({ view, sp, user }) {
                     </tr>
                   ))}
                 </tbody>
-              </table>
+              </table></div>
             )}
           </div>
 
@@ -503,7 +503,7 @@ export default async function UsersSection({ view, sp, user }) {
             {sharedCurrentIP.length === 0 ? (
               <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>No shared current IPs found.</p>
             ) : (
-              <table className="table-panel">
+              <div className="adm-table-wrap"><table className="table-panel">
                 <thead><tr><th>IP</th><th>Accounts</th><th>Users</th></tr></thead>
                 <tbody>
                   {sharedCurrentIP.map((row, i) => (
@@ -514,7 +514,7 @@ export default async function UsersSection({ view, sp, user }) {
                     </tr>
                   ))}
                 </tbody>
-              </table>
+              </table></div>
             )}
           </div>
         </div>
@@ -522,7 +522,7 @@ export default async function UsersSection({ view, sp, user }) {
         {sharedEmail.length > 0 && (
           <div className="panel no-hover" style={{ padding: 20 }}>
             <h4 style={{ fontSize: 13, fontWeight: 700, marginBottom: 14 }}>Shared Email Addresses ({sharedEmail.length})</h4>
-            <table className="table-panel">
+            <div className="adm-table-wrap"><table className="table-panel">
               <thead><tr><th>Email</th><th>Accounts</th><th>Users</th></tr></thead>
               <tbody>
                 {sharedEmail.map((row, i) => (
@@ -533,7 +533,7 @@ export default async function UsersSection({ view, sp, user }) {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
           </div>
         )}
       </div>
@@ -561,7 +561,7 @@ export default async function UsersSection({ view, sp, user }) {
           <button type="submit" className="btn btn-primary btn-sm">Search</button>
         </form>
       </div>
-      <table className="table-panel">
+      <div className="adm-table-wrap"><table className="table-panel">
         <thead><tr><th>ID</th><th>Username</th><th>Email</th><th>Rank</th><th>Credits</th><th>Status</th><th>Actions</th></tr></thead>
         <tbody>
           {users.map(u => (
@@ -582,7 +582,7 @@ export default async function UsersSection({ view, sp, user }) {
             <tr><td colSpan={7} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 30 }}>No users found.</td></tr>
           )}
         </tbody>
-      </table>
+      </table></div>
     </div>
   );
 }
@@ -684,13 +684,13 @@ async function UserProfileView({ sp, adminUser }) {
       </div>
 
       {/* Edit form + rooms */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16, marginBottom: 16 }}>
         <div className="panel no-hover" style={{ padding: 20 }}>
           <h3 style={{ fontSize: 14, fontWeight: 700, marginBottom: 14 }}>Edit User</h3>
           <form action={editUserAction}>
             <input type="hidden" name="user_id" value={profileUser.id} />
             <div style={{ marginBottom: 12 }}><label style={labelStyle}>Motto</label><input type="text" name="motto" defaultValue={profileUser.motto || ''} maxLength={100} /></div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 12 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 10, marginBottom: 12 }}>
               <div><label style={labelStyle}>Credits</label><input type="number" name="credits" defaultValue={profileUser.credits||0} min={0} /></div>
               <div><label style={labelStyle}>Duckets</label><input type="number" name="pixels"   defaultValue={profileUser.pixels||0}  min={0} /></div>
               <div><label style={labelStyle}>Diamonds</label><input type="number" name="points"  defaultValue={profileUser.points||0}  min={0} /></div>
@@ -748,7 +748,7 @@ async function UserProfileView({ sp, adminUser }) {
       )}
 
       {/* Chat logs */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16 }}>
         <div className="panel no-hover" style={{ padding: 20 }}>
           <h3 style={{ fontSize: 14, fontWeight: 700, marginBottom: 14 }}>Recent Chats ({profileChats.length})</h3>
           {profileChats.length === 0 ? <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>No recent chats.</p> : (

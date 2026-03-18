@@ -15,6 +15,8 @@ import GamblingSection from './sections/GamblingSection';
 import LogsSection from './sections/LogsSection';
 import SettingsSection from './sections/SettingsSection';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata = { title: 'Housekeeping' };
 
 // Legacy tab → new section/view mapping
@@ -166,10 +168,56 @@ export default async function AdminPage({ searchParams }) {
       {success && <div className="flash flash-success" style={{ marginBottom: 16 }}>{decodeURIComponent(success).replace(/[<>]/g, '')}</div>}
       {error   && <div className="flash flash-error"   style={{ marginBottom: 16 }}>{decodeURIComponent(error).replace(/[<>]/g, '')}</div>}
 
-      <div className="grid grid-cols-[220px_1fr] gap-5 max-md:grid-cols-1" style={{ alignItems: 'start' }}>
+      <div className="adm-layout" style={{ display: 'grid', gridTemplateColumns: '220px 1fr', gap: 20, alignItems: 'start' }}>
 
         {/* ── Sidebar ── */}
-        <div className="bg-bg-secondary border border-border rounded-lg" style={{ position: 'sticky', top: 20, overflow: 'hidden' }}>
+        <div>
+          <details className="adm-sidebar-toggle">
+            <summary className="btn btn-secondary btn-sm" style={{ cursor: 'pointer', listStyle: 'none', display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+              ☰ Menu — {SECTIONS.find(s => s.key === tab)?.label || 'Navigation'}
+            </summary>
+            <div className="bg-bg-secondary border border-border rounded-lg" style={{ marginTop: 8, overflow: 'hidden' }}>
+              {SECTIONS.filter(s => user.rank >= s.minRank).map(s => {
+                const isActive = s.key === tab;
+                return (
+                  <div key={s.key}>
+                    <Link href={`/admin?tab=${s.key}`} style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      padding: '9px 14px', textDecoration: 'none', fontSize: 12, fontWeight: 700,
+                      color: isActive ? 'var(--green)' : 'var(--text-primary)',
+                      background: isActive ? 'rgba(52,189,89,0.07)' : 'transparent',
+                      borderLeft: isActive ? '2px solid var(--green)' : '2px solid transparent',
+                    }}>
+                      {s.label}
+                    </Link>
+                    {isActive && (
+                      <div style={{ background: 'rgba(0,0,0,0.15)', paddingBottom: 4 }}>
+                        {s.views.map((sv, i) => {
+                          if (sv.href) return (
+                            <a key={i} href={sv.href} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 14px 6px 22px', fontSize: 11, color: 'var(--text-secondary)', textDecoration: 'none' }}>
+                              {sv.label} <span style={{ fontSize: 9, color: 'var(--text-muted)' }}>↗</span>
+                            </a>
+                          );
+                          const isViewActive = view === sv.view || (sv.view === null && view === null);
+                          return (
+                            <Link key={i} href={`/admin?tab=${s.key}${sv.view ? `&view=${sv.view}` : ''}`} style={{
+                              display: 'block', padding: '6px 14px 6px 22px', fontSize: 11, textDecoration: 'none',
+                              fontWeight: isViewActive ? 700 : 500,
+                              color: isViewActive ? 'var(--green)' : 'var(--text-secondary)',
+                            }}>
+                              {sv.label}
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    )}
+                    <div style={{ height: 1, background: 'rgba(255,255,255,0.04)' }} />
+                  </div>
+                );
+              })}
+            </div>
+          </details>
+          <div className="bg-bg-secondary border border-border rounded-lg adm-sidebar-desktop" style={{ position: 'sticky', top: 20, overflow: 'hidden' }}>
           {SECTIONS.filter(s => user.rank >= s.minRank).map(s => {
             const isActive = s.key === tab;
             return (
@@ -217,6 +265,7 @@ export default async function AdminPage({ searchParams }) {
               </div>
             );
           })}
+          </div>
         </div>
 
         {/* ── Main content ── */}

@@ -1,3 +1,5 @@
+
+export const dynamic = 'force-dynamic';
 export const metadata = { title: 'OCMS Diagnostics' };
 
 export default async function DiagPage() {

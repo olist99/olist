@@ -3,6 +3,8 @@ import Link from 'next/link';
 import { getCurrentUser, verifyPassword, setSession } from '@/lib/auth';
 import { queryOne, query as dbQuery } from '@/lib/db';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata = { title: 'Login' };
 
 export default async function LoginPage({ searchParams }) {

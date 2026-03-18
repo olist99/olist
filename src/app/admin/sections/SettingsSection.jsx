@@ -19,7 +19,7 @@ export default async function SettingsSection({ view, sp, user }) {
         {settings.length === 0 ? (
           <p style={{ color: 'var(--text-muted)', fontSize: 12 }}>No settings found in cms_settings table.</p>
         ) : (
-          <table className="table-panel">
+          <div className="adm-table-wrap"><table className="table-panel">
             <thead><tr><th>Key</th><th>Value</th></tr></thead>
             <tbody>
               {settings.map(s => (
@@ -29,7 +29,7 @@ export default async function SettingsSection({ view, sp, user }) {
                 </tr>
               ))}
             </tbody>
-          </table>
+          </table></div>
         )}
         <div style={{ marginTop: 16 }}>
           <button type="submit" className="btn btn-primary">Save All Settings</button>

@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 /**
  * Duel API — shared for Dice Duel & High Card (solo + multiplayer rooms)
  *

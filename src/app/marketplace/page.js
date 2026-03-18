@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation';
+import { isPluginEnabled } from '@/lib/plugins';
 import Link from 'next/link';
 import { getCurrentUser, getSessionUserId } from '@/lib/auth';
 import { query, queryOne, queryScalar } from '@/lib/db';
@@ -7,12 +8,15 @@ import { formatNumber, timeAgo, CURRENCY_ICONS } from '@/lib/utils';
 const CIcon = ({ type, size = 14 }) => <img src={CURRENCY_ICONS[type] || '/images/coin.png'} alt="" style={{ width: size, height: size, imageRendering: 'pixelated', verticalAlign: 'middle' }} />;
 import SellForm from '@/components/SellForm';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata = { title: 'Marketplace' };
 
 
 
 export default async function MarketplacePage({ searchParams }) {
   const user = await getCurrentUser();
+  if (!await isPluginEnabled('marketplace')) redirect('/');
   const sp = await searchParams;
   const cat = sp?.cat || 'all';
   const search = sp?.q || '';

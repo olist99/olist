@@ -1,7 +1,9 @@
+export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import { query, queryOne, queryScalar } from '@/lib/db';
 import { sanitizeText, safeInt, checkRateLimit } from '@/lib/security';
+import { sendNotification } from '@/lib/notifications';
 
 async function settleEndedAuctions() {
   const ended = await query(
@@ -38,15 +40,14 @@ async function settleEndedAuctions() {
         // Official auctions are a currency sink — do NOT pay the admin account
       }
 
-      const { sendNotification } = await import('@/lib/notifications');
-      sendNotification(topBid.user_id, {
+      await sendNotification(topBid.user_id, {
         type: 'auction_won',
         title: `You won the auction for "${auction.title}"!`,
-        message: `Winning bid: ${topBid.amount.toLocaleString()} ${auction.currency}. ${auction.is_official ? 'Item added to your inventory!' : 'Item added to your inventory.'}`,
+        message: `Winning bid: ${topBid.amount.toLocaleString()} ${auction.currency}. Item added to your inventory!`,
         link: '/auction',
       });
       if (!auction.is_official && auction.created_by !== topBid.user_id) {
-        sendNotification(auction.created_by, {
+        await sendNotification(auction.created_by, {
           type: 'auction_sold',
           title: `Your auction "${auction.title}" ended!`,
           message: `Sold for ${topBid.amount.toLocaleString()} ${auction.currency}. Funds added to your account.`,
@@ -199,17 +200,27 @@ export async function POST(request) {
       [title, description, startBid, currency, endTime, user.id, 'active', itemName]
     );
 
-    // Notify all users about the new official auction (bulk insert)
-    const { sendNotification } = await import('@/lib/notifications');
-    const allUsers = await query('SELECT id FROM users WHERE rank >= 1 AND id != ?', [user.id]).catch(() => []);
-    for (const u of allUsers) {
-      sendNotification(u.id, {
-        type: 'auction_new',
-        title: `New official auction: "${title}"`,
-        message: `Starting bid: ${startBid.toLocaleString()} ${currency}. Don't miss out!`,
-        link: '/auction',
-      });
-    }
+    // Notify all users via bulk INSERT (no per-row loop)
+    try {
+      const allUsers = await query('SELECT id FROM users WHERE rank >= 1 AND id != ?', [user.id]).catch(() => []);
+      if (allUsers.length > 0) {
+        const chunkSize = 500;
+        for (let i = 0; i < allUsers.length; i += chunkSize) {
+          const chunk = allUsers.slice(i, i + chunkSize);
+          const placeholders = chunk.map(() => '(?,?,?,?,?)').join(',');
+          const flat = chunk.flatMap(u => [
+            u.id, 'auction_new',
+            `New official auction: "${title}"`,
+            `Starting bid: ${startBid.toLocaleString()} ${currency}. Don't miss out!`,
+            '/auction'
+          ]);
+          await query(
+            `INSERT INTO cms_notifications (user_id, type, title, message, link) VALUES ${placeholders}`,
+            flat
+          ).catch(() => {});
+        }
+      }
+    } catch {}
 
     return NextResponse.json({ ok: true });
   }
@@ -237,10 +248,10 @@ export async function POST(request) {
     // Remove item from user inventory (hold it in auction)
     await query('UPDATE items SET user_id = 0, room_id = -99 WHERE id = ? AND user_id = ?', [itemId, user.id]);
 
-    const endTime = new Date(Date.now() + endHours * 3600000).toISOString().slice(0, 19).replace('T', ' ');
+    const endTime = new Date(Date.now() + endHours * 3600000).toISOString().slice(0, 19).replace('T', ' '); // stored as UTC
     await query(
       'INSERT INTO cms_auctions (title, description, start_bid, currency, end_time, created_by, status, is_official, item_id, item_name) VALUES (?,?,?,?,?,?,?,0,?,?)',
-      [item.public_name, description, startBid, currency, endTime, user.id, 'active', itemId, item.item_name]
+      [item.public_name.replace(/^\d+\s+/, ''), description, startBid, currency, endTime, user.id, 'active', itemId, item.item_name]
     );
     return NextResponse.json({ ok: true });
   }
@@ -320,8 +331,7 @@ export async function POST(request) {
     // Refund previous top bidder (if different user)
     if (topBid && topBid.user_id !== user.id) {
       await query(`UPDATE users SET \`${currency}\` = \`${currency}\` + ? WHERE id = ?`, [topBid.amount, topBid.user_id]);
-      const { sendNotification } = await import('@/lib/notifications');
-      sendNotification(topBid.user_id, {
+      await sendNotification(topBid.user_id, {
         type: 'auction_outbid',
         title: `You were outbid on "${auction.title}"`,
         message: `${user.username} outbid you. Your ${topBid.amount.toLocaleString()} ${currency} has been refunded.`,

@@ -133,7 +133,7 @@ export default function CatalogManager() {
   ) : items;
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '280px 1fr', gap: 20, alignItems: 'start' }}>
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(280px, 100%), 1fr))', gap: 20, alignItems: 'start' }}>
       {editItem && <EditItemModal item={editItem} pages={pages} onSave={saveItem} onClose={() => setEditItem(null)} />}
 
       {/* Page Tree */}

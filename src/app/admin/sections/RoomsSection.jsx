@@ -40,7 +40,7 @@ export default async function RoomsSection({ view, sp, user }) {
           <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 20 }}>Edit Room: {room.name}</h3>
           <form action={editRoomAction}>
             <input type="hidden" name="room_id" value={room.id} />
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16, marginBottom: 16 }}>
               <div><label style={labelStyle}>Room Name *</label><input type="text" name="name" defaultValue={room.name} required /></div>
               <div><label style={labelStyle}>Max Users</label><input type="number" name="users_max" defaultValue={room.users_max || 25} min={1} max={250} /></div>
             </div>
@@ -98,7 +98,7 @@ export default async function RoomsSection({ view, sp, user }) {
         </div>
         {rooms.length > 0 && (
           <div className="panel no-hover" style={{ padding: 20 }}>
-            <table className="table-panel">
+            <div className="adm-table-wrap"><table className="table-panel">
               <thead><tr><th>ID</th><th>Name</th><th>Owner</th><th>Users</th><th></th></tr></thead>
               <tbody>
                 {rooms.map(r => (
@@ -117,7 +117,7 @@ export default async function RoomsSection({ view, sp, user }) {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
           </div>
         )}
       </div>
@@ -177,7 +177,7 @@ export default async function RoomsSection({ view, sp, user }) {
             {enterLogs.length === 0 ? (
               <p style={{ color: 'var(--text-muted)', fontSize: 12, textAlign: 'center', padding: 20 }}>No room entry logs found.</p>
             ) : (
-              <table className="table-panel">
+              <div className="adm-table-wrap"><table className="table-panel">
                 <thead><tr><th>User</th><th>Room</th><th>Time</th></tr></thead>
                 <tbody>
                   {enterLogs.map((l, i) => (
@@ -188,7 +188,7 @@ export default async function RoomsSection({ view, sp, user }) {
                     </tr>
                   ))}
                 </tbody>
-              </table>
+              </table></div>
             )}
           </div>
         ) : (
@@ -200,7 +200,7 @@ export default async function RoomsSection({ view, sp, user }) {
               {chatByRoom.length === 0 ? (
                 <p style={{ color: 'var(--text-muted)', fontSize: 12, textAlign: 'center', padding: 20 }}>No chat data found.</p>
               ) : (
-                <table className="table-panel">
+                <div className="adm-table-wrap"><table className="table-panel">
                   <thead><tr><th>Room</th><th>Messages</th><th>Unique Users</th><th>Last Activity</th><th></th></tr></thead>
                   <tbody>
                     {chatByRoom.map((r, i) => (
@@ -213,7 +213,7 @@ export default async function RoomsSection({ view, sp, user }) {
                       </tr>
                     ))}
                   </tbody>
-                </table>
+                </table></div>
               )}
             </div>
           </div>
@@ -276,7 +276,7 @@ export default async function RoomsSection({ view, sp, user }) {
           </form>
         </div>
         <div className="panel no-hover" style={{ padding: 20 }}>
-          <table className="table-panel">
+          <div className="adm-table-wrap"><table className="table-panel">
             <thead><tr><th>#</th><th>Room Name</th><th>Owner</th><th>Score</th><th>Players</th><th>Boost Score</th><th></th></tr></thead>
             <tbody>
               {topRooms.map((r, i) => (
@@ -303,7 +303,7 @@ export default async function RoomsSection({ view, sp, user }) {
               ))}
               {topRooms.length === 0 && <tr><td colSpan={7} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 20 }}>No rooms found.</td></tr>}
             </tbody>
-          </table>
+          </table></div>
         </div>
       </div>
     );
@@ -334,7 +334,7 @@ export default async function RoomsSection({ view, sp, user }) {
         </form>
       </div>
       <div className="panel no-hover" style={{ padding: 20 }}>
-        <table className="table-panel">
+        <div className="adm-table-wrap"><table className="table-panel">
           <thead><tr><th>ID</th><th>Name</th><th>Owner</th><th>Players</th><th>Score</th><th>State</th><th></th></tr></thead>
           <tbody>
             {rooms.map(r => (
@@ -353,7 +353,7 @@ export default async function RoomsSection({ view, sp, user }) {
             ))}
             {rooms.length === 0 && <tr><td colSpan={7} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 30 }}>No rooms found.</td></tr>}
           </tbody>
-        </table>
+        </table></div>
       </div>
     </div>
   );

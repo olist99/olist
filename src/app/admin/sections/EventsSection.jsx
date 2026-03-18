@@ -43,7 +43,7 @@ export default async function EventsSection({ view, sp, user }) {
         </div>
         <form action={saveEventAction}>
           {event && <input type="hidden" name="id" value={event.id} />}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16, marginBottom: 16 }}>
             <div><label style={labelStyle}>Title *</label><input type="text" name="title" defaultValue={event?.title||''} required /></div>
             <div><label style={labelStyle}>Start Date & Time</label><input type="datetime-local" name="event_date" defaultValue={event?.event_date ? new Date(event.event_date).toISOString().slice(0,16) : ''} /></div>
           </div>
@@ -96,7 +96,7 @@ export default async function EventsSection({ view, sp, user }) {
       <div>
         <SectionHeader title="Event Currency Control" sub="Award currency to players as event rewards" back="events" />
 
-        <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr', gap: 16 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'min(300px, 100%) 1fr', flexWrap: 'wrap', gap: 16 }}>
           <div className="panel no-hover" style={{ padding: 20 }}>
             <h4 style={{ fontSize: 13, fontWeight: 700, marginBottom: 14 }}>Award Currency</h4>
             <form action={awardCurrencyAction}>
@@ -132,7 +132,7 @@ export default async function EventsSection({ view, sp, user }) {
             {events.length === 0 ? (
               <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>No events found. <Link href="/admin?tab=events&view=create" style={{ color: 'var(--green)' }}>Create one</Link></p>
             ) : (
-              <table className="table-panel">
+              <div className="adm-table-wrap"><table className="table-panel">
                 <thead><tr><th>Event</th><th>Date</th></tr></thead>
                 <tbody>
                   {events.map(e => (
@@ -142,7 +142,7 @@ export default async function EventsSection({ view, sp, user }) {
                     </tr>
                   ))}
                 </tbody>
-              </table>
+              </table></div>
             )}
           </div>
         </div>
@@ -173,7 +173,7 @@ export default async function EventsSection({ view, sp, user }) {
           return (
             <div key={group} className="panel no-hover" style={{ padding: 20, marginBottom: 12 }}>
               <h4 style={{ fontSize: 13, fontWeight: 700, marginBottom: 12, color: 'var(--green)' }}>{group} <span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 400 }}>({groupQuests.length})</span></h4>
-              <table className="table-panel">
+              <div className="adm-table-wrap"><table className="table-panel">
                 <thead><tr><th>ID</th><th>Name</th><th>Reward</th><th>Reward Type</th><th>Achievement</th></tr></thead>
                 <tbody>
                   {groupQuests.map(q => (
@@ -186,7 +186,7 @@ export default async function EventsSection({ view, sp, user }) {
                     </tr>
                   ))}
                 </tbody>
-              </table>
+              </table></div>
             </div>
           );
         })}
@@ -240,7 +240,7 @@ export default async function EventsSection({ view, sp, user }) {
       <div>
         <SectionHeader title="Badge Rewards" sub="Award event badges to players" back="events" />
 
-        <div style={{ display: 'grid', gridTemplateColumns: '280px 1fr', gap: 16 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'min(280px, 100%) 1fr', flexWrap: 'wrap', gap: 16 }}>
           <div className="panel no-hover" style={{ padding: 20 }}>
             <h4 style={{ fontSize: 13, fontWeight: 700, marginBottom: 14 }}>Award Badge</h4>
 
@@ -333,7 +333,7 @@ export default async function EventsSection({ view, sp, user }) {
       {eventsData.length === 0 ? (
         <p style={{ color: 'var(--text-muted)', fontSize: 12, textAlign: 'center', padding: 20 }}>No events scheduled.</p>
       ) : (
-        <table className="table-panel">
+        <div className="adm-table-wrap"><table className="table-panel">
           <thead><tr><th>Event</th><th>Start</th><th>Status</th><th>Staff</th><th></th></tr></thead>
           <tbody>
             {eventsData.map(e => {
@@ -373,7 +373,7 @@ export default async function EventsSection({ view, sp, user }) {
               );
             })}
           </tbody>
-        </table>
+        </table></div>
       )}
     </div>
   );

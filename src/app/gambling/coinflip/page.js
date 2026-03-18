@@ -2,6 +2,8 @@ import { redirect } from 'next/navigation';
 import { getCurrentUser } from '@/lib/auth';
 import CoinFlipGame from './CoinFlipGame';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata = { title: 'Coin Toss' };
 
 export default async function CoinFlipPage() {

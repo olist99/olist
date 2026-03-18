@@ -2,6 +2,8 @@ import { redirect } from 'next/navigation';
 import { getCurrentUser } from '@/lib/auth';
 import LogsClient from './LogsClient';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata = { title: 'Admin Action Log' };
 
 export default async function LogsPage() {

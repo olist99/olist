@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import { query, queryOne } from '@/lib/db';
@@ -94,7 +95,7 @@ export async function POST(request) {
     } else {
       await query('INSERT IGNORE INTO cms_camera_likes (photo_id, user_id) VALUES (?,?)', [photoId, user.id]);
       // Notify photo owner (non-blocking, once per user per photo is fine via INSERT IGNORE)
-      sendNotification(photo.user_id, {
+      await sendNotification(photo.user_id, {
         type: 'camera_like',
         title: `${user.username} liked your photo!`,
         message: photo.room_name ? `Photo from room: ${photo.room_name}` : '',

@@ -23,7 +23,7 @@ export default async function LogsSection({ view, sp, user }) {
           <div className="panel no-hover" style={{ padding: 40, textAlign: 'center' }}><p style={{ color: 'var(--text-muted)' }}>No credit edits logged yet.</p></div>
         ) : (
           <div className="panel no-hover" style={{ padding: 20 }}>
-            <table className="table-panel">
+            <div className="adm-table-wrap"><table className="table-panel">
               <thead><tr><th>Time</th><th>Player</th><th>Currency</th><th>Amount</th><th>Balance After</th><th>Reason</th><th>By</th></tr></thead>
               <tbody>
                 {logs.map((l, i) => (
@@ -38,7 +38,7 @@ export default async function LogsSection({ view, sp, user }) {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
           </div>
         )}
       </div>
@@ -68,7 +68,7 @@ export default async function LogsSection({ view, sp, user }) {
           <div className="panel no-hover" style={{ padding: 40, textAlign: 'center' }}><p style={{ color: 'var(--text-muted)' }}>No rank changes logged yet.</p></div>
         ) : (
           <div className="panel no-hover" style={{ padding: 20 }}>
-            <table className="table-panel">
+            <div className="adm-table-wrap"><table className="table-panel">
               <thead><tr><th>Time</th><th>Player</th><th>Old Rank</th><th>New Rank</th><th>Reason</th><th>By</th></tr></thead>
               <tbody>
                 {logs.map((l, i) => (
@@ -82,7 +82,7 @@ export default async function LogsSection({ view, sp, user }) {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
           </div>
         )}
       </div>
@@ -148,7 +148,7 @@ export default async function LogsSection({ view, sp, user }) {
       <div>
         <SectionHeader title="Rare Spawns" sub="Give items to players and track distributions" back="logs" />
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16, marginBottom: 16 }}>
           <div className="panel no-hover" style={{ padding: 20 }}>
             <h4 style={{ fontSize: 13, fontWeight: 700, marginBottom: 12 }}>1. Find Item</h4>
             <form action="/admin" method="GET" style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
@@ -209,7 +209,7 @@ export default async function LogsSection({ view, sp, user }) {
             {recentSpawns.length === 0 ? (
               <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>No items given yet.</p>
             ) : (
-              <table className="table-panel">
+              <div className="adm-table-wrap"><table className="table-panel">
                 <thead><tr><th>Staff</th><th>Player</th><th>Item</th><th>Qty</th><th>Date</th></tr></thead>
                 <tbody>
                   {recentSpawns.map((l, i) => (
@@ -222,7 +222,7 @@ export default async function LogsSection({ view, sp, user }) {
                     </tr>
                   ))}
                 </tbody>
-              </table>
+              </table></div>
             )}
           </div>
         ) : (
@@ -255,7 +255,7 @@ export default async function LogsSection({ view, sp, user }) {
             <p style={{ fontSize: 13, fontWeight: 700, color: '#f5a623', marginBottom: 8 }}>cms_admin_log table not found</p>
             <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Run <code>sql/ocms_missing_tables.sql</code> to create the table. Admin actions will be logged automatically once it exists.</p>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 12 }}>
             {[
               { label: 'Admin Action Logs', desc: 'Full log of all admin actions', href: '/admin/logs' },
               { label: 'Security Logs', desc: 'Login attempts and security events', href: '/admin/security' },
@@ -273,7 +273,7 @@ export default async function LogsSection({ view, sp, user }) {
           {staffLogs.length === 0 ? (
             <p style={{ color: 'var(--text-muted)', fontSize: 12 }}>No staff actions logged yet.</p>
           ) : (
-            <table className="table-panel">
+            <div className="adm-table-wrap"><table className="table-panel">
               <thead><tr><th>Time</th><th>Staff</th><th>Action</th><th>Target</th><th>Details</th><th>IP</th></tr></thead>
               <tbody>
                 {staffLogs.map((l, i) => (
@@ -287,7 +287,7 @@ export default async function LogsSection({ view, sp, user }) {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
           )}
         </div>
       )}

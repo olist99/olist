@@ -15,7 +15,7 @@ export default async function HotelContentSection({ view, sp, user }) {
         ) : (
           <div className="panel no-hover" style={{ padding: 20 }}>
             <h4 style={{ fontSize: 13, fontWeight: 700, marginBottom: 14 }}>Most Common Badges (top 50)</h4>
-            <table className="table-panel">
+            <div className="adm-table-wrap"><table className="table-panel">
               <thead><tr><th>Badge Code</th><th>Preview</th><th>Owners</th></tr></thead>
               <tbody>
                 {badges.map((b, i) => (
@@ -27,7 +27,7 @@ export default async function HotelContentSection({ view, sp, user }) {
                 ))}
                 {badges.length === 0 && <tr><td colSpan={3} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 20 }}>No badge data found.</td></tr>}
               </tbody>
-            </table>
+            </table></div>
           </div>
         )}
       </div>
@@ -76,7 +76,7 @@ export default async function HotelContentSection({ view, sp, user }) {
       <div>
         <SectionHeader title="Navigator Categories" sub={`${categories.length} categories in navigator_publiccats`} back="hotel-content" />
         <div className="panel no-hover" style={{ padding: 20 }}>
-          <table className="table-panel">
+          <div className="adm-table-wrap"><table className="table-panel">
             <thead><tr><th>ID</th><th>Caption</th><th>Type</th><th>Min Rank</th><th>Enabled</th><th>Actions</th></tr></thead>
             <tbody>
               {categories.map(c => (
@@ -105,7 +105,7 @@ export default async function HotelContentSection({ view, sp, user }) {
               ))}
               {categories.length === 0 && <tr><td colSpan={6} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 20 }}>No categories found.</td></tr>}
             </tbody>
-          </table>
+          </table></div>
         </div>
       </div>
     );
@@ -146,7 +146,7 @@ export default async function HotelContentSection({ view, sp, user }) {
           {achievements.length === 0 ? (
             <p style={{ color: 'var(--text-muted)', fontSize: 12, textAlign: 'center', padding: 20 }}>No achievement data yet.</p>
           ) : (
-            <table className="table-panel">
+            <div className="adm-table-wrap"><table className="table-panel">
               <thead><tr><th>Achievement Name</th><th>Completions</th><th>Total Progress</th></tr></thead>
               <tbody>
                 {achievements.map((a, i) => (
@@ -157,7 +157,7 @@ export default async function HotelContentSection({ view, sp, user }) {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
           )}
         </div>
       </div>
@@ -167,7 +167,7 @@ export default async function HotelContentSection({ view, sp, user }) {
   // Default: overview with links
   return (
     <div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16, marginBottom: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 16, marginBottom: 16 }}>
         {[
           { label: 'Catalog Editor', desc: 'Edit catalog pages, tabs, and item listings', href: '/admin/catalog', active: true },
           { label: 'Furniture Manager', desc: 'Browse and manage furniture definitions', href: '/admin/furniture', active: true },

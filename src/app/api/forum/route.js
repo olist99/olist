@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import { getSessionUserId, getCurrentUser } from '@/lib/auth';
 import { query, queryOne } from '@/lib/db';
@@ -65,7 +66,7 @@ export async function POST(request) {
 
       // Notify thread author if different from replier
       if (thread.user_id !== userId) {
-        sendNotification(thread.user_id, {
+        await sendNotification(thread.user_id, {
           type: 'forum_reply',
           title: `${user.username} replied to your thread`,
           message: thread.title ? `"${thread.title.slice(0, 80)}"` : '',
