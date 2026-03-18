@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { query, queryScalar } from '@/lib/db';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata = { title: 'Rare Values' };
 
 export default async function RaresPage({ searchParams }) {

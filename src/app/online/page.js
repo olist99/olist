@@ -3,6 +3,8 @@ import { query, queryScalar } from '@/lib/db';
 import { formatNumber, RANK_COLORS, RANK_ICONS, timeAgo } from '@/lib/utils';
 import Avatar from '@/components/Avatar';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata = { title: 'Users Online' };
 
 export default async function OnlinePage({ searchParams }) {

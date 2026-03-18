@@ -5,6 +5,8 @@ import { queryOne, queryScalar, query as dbQuery } from '@/lib/db';
 import crypto from 'crypto';
 import { sanitizeText, sanitizeEmail, sanitizeUsername, checkRateLimit } from '@/lib/security';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata = { title: 'Register' };
 
 export default async function RegisterPage({ searchParams }) {

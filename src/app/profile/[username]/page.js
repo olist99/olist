@@ -4,6 +4,10 @@ import { getCurrentUser } from '@/lib/auth';
 import { query, queryOne, queryScalar } from '@/lib/db';
 import { formatNumber, badgeUrl, timeAgo, unixToDate, RANK_COLORS, RANK_ICONS } from '@/lib/utils';
 import Avatar from '@/components/Avatar';
+import GuestbookAndStickers from './GuestbookAndStickers';
+import ProfileActions from './ProfileActions';
+
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }) {
   const p = await params;
@@ -27,7 +31,7 @@ export default async function ProfilePage({ params }) {
   const isOwn = currentUser?.id === profile.id;
   const rankColor = RANK_COLORS[profile.rank] || '#8b949e';
 
-  const [badges, recentComments, marketActivity, relationships, cameraPhotos] = await Promise.all([
+  const [badges, recentComments, marketActivity, relationships, cameraPhotos, initialStickers] = await Promise.all([
     query('SELECT badge_code FROM users_badges WHERE user_id = ? LIMIT 20', [profile.id]),
     query(`
       SELECT c.*, n.title AS news_title
@@ -58,6 +62,9 @@ export default async function ProfilePage({ params }) {
       WHERE p.user_id = ?
       ORDER BY p.created_at DESC LIMIT 6
     `, [profile.id]).catch(() => []),
+    queryOne('SELECT stickers FROM cms_profile_stickers WHERE profile_id = ?', [profile.id])
+      .then(r => { try { return r ? JSON.parse(r.stickers) : []; } catch { return []; } })
+      .catch(() => []),
   ]);
 
   const REL_CONFIG = {
@@ -75,7 +82,7 @@ export default async function ProfilePage({ params }) {
     : 0;
 
   return (
-    <div className="animate-fade-up">
+    <div className="animate-fade-up" style={{ position: 'relative' }}>
       {/* Hero */}
       <div className="profilebox rounded-lg border border-border p-8 flex gap-6 items-center mb-5 relative overflow-hidden max-md:flex-col max-md:text-center">
         <Avatar look={profile.look} />
@@ -97,7 +104,7 @@ export default async function ProfilePage({ params }) {
           </div>
         </div>
         {isOwn && (
-          <Link href="/settings" className="btn btn-secondary btn-sm absolute top-5 right-5">Edit Profile</Link>
+          <ProfileActions />
         )}
       </div>
 
@@ -246,6 +253,15 @@ export default async function ProfilePage({ params }) {
           </div>
         </div>
       )}
+      {/* Guestbook & Stickers */}
+      <GuestbookAndStickers
+        profileId={profile.id}
+        profileUsername={profile.username}
+        currentUserId={currentUser?.id || null}
+        currentUserRank={currentUser?.rank || 0}
+        isOwn={isOwn}
+        initialStickers={initialStickers}
+      />
     </div>
   );
 }

@@ -1,15 +1,20 @@
 import { redirect } from 'next/navigation';
+import { isPluginEnabled } from '@/lib/plugins';
 import Link from 'next/link';
 import { getCurrentUser } from '@/lib/auth';
 import { query, queryOne } from '@/lib/db';
 import { formatNumber, CURRENCIES } from '@/lib/utils';
 import GiftButton from '@/components/GiftButton';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata = { title: 'Shop' };
 
 export default async function ShopPage({ searchParams }) {
   const user = await getCurrentUser();
   if (!user) redirect('/login');
+  if (!await isPluginEnabled('shop')) redirect('/');
+
 
   const sp = await searchParams;
   const cat = sp?.cat || 'all';

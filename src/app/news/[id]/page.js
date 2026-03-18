@@ -5,6 +5,8 @@ import { query, queryOne } from '@/lib/db';
 import { timeAgo, RANK_COLORS } from '@/lib/utils';
 import Avatar from '@/components/Avatar';
 
+export const dynamic = 'force-dynamic';
+
 export async function generateMetadata({ params }) {
   const p = await params;
   const article = await queryOne('SELECT title FROM cms_news WHERE id = ?', [p.id]);
@@ -105,7 +107,7 @@ export default async function NewsDetailPage({ params }) {
         <div className="p-6">
           <div className="flex items-center gap-3 text-xs text-text-muted mb-4 flex-wrap">
             <span className="bg-accent text-bg-primary px-2 py-0.5 rounded font-bold text-[10px]">{article.tag}</span>
-            <span>📅 {new Date(article.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
+            <span>📅 {new Date(article.created_at.toString().trim().replace(' UTC','').replace(' ','T') + (article.created_at.toString().endsWith('Z') ? '' : 'Z')).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}</span>
             <span className="flex items-center gap-1">
               by <Link href={'/profile/' + article.author_name} className="text-accent flex items-center gap-1">
                 <Avatar look={article.author_look} size="s" style={{ width: 20, height: 28 }} /> {article.author_name}

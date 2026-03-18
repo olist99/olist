@@ -5,6 +5,8 @@ import { query, queryOne } from '@/lib/db';
 import { timeAgo } from '@/lib/utils';
 import TicketReply from './TicketReply';
 
+export const dynamic = 'force-dynamic';
+
 export async function generateMetadata({ params }) {
   const p = await params;
   return { title: `Ticket #${p.id}` };

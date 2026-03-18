@@ -3,6 +3,8 @@ import { query } from '@/lib/db';
 import { RANK_COLORS, RANK_ICONS } from '@/lib/utils';
 import Avatar from '@/components/Avatar';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata = { title: 'Staff' };
 
 export default async function StaffPage() {

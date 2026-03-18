@@ -5,6 +5,8 @@ import { query } from '@/lib/db';
 import Avatar from '@/components/Avatar';
 import { headers } from 'next/headers';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata = { title: 'Settings' };
 
 export default async function SettingsPage({ searchParams }) {
@@ -223,7 +225,7 @@ export default async function SettingsPage({ searchParams }) {
                             {isCurrentIp ? 'Current' : ''}
                           </div>
                           <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>
-                            {h.created_at ? new Date(h.created_at).toLocaleString() : '—'}
+                            {h.created_at ? new Date(h.created_at.toString().trim().replace(' UTC','').replace(' ','T') + (h.created_at.toString().endsWith('Z') ? '' : 'Z')).toLocaleString(undefined) : '—'}
                           </div>
                         </div>
                       </div>

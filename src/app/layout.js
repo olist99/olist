@@ -3,6 +3,9 @@ import { getCurrentUser } from '@/lib/auth';
 import { queryScalar } from '@/lib/db';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import { getAllPlugins, isPluginEnabled } from '@/lib/plugins';
+
+export const dynamic = 'force-dynamic';
 
 export const metadata = {
   title: { default: 'OCMS', template: '%s - OCMS' },
@@ -13,16 +16,21 @@ export default async function RootLayout({ children }) {
   let user = null;
   let onlineCount = 0;
 
+  let enabledPlugins = [];
   try {
     user = await getCurrentUser();
     onlineCount = await queryScalar("SELECT COUNT(*) FROM users WHERE online = '1'") || 0;
+    // Build list of enabled plugin slugs for the nav
+    const allPlugins = getAllPlugins();
+    const results = await Promise.all(allPlugins.map(p => isPluginEnabled(p.slug)));
+    enabledPlugins = allPlugins.filter((_, i) => results[i]).map(p => p.slug);
   } catch (e) {}
 
   return (
     <html lang="en">
       <link rel="icon" type="image/x-icon" href="/images/favicon.ico"></link>
       <body>
-        <Header user={user} onlineCount={onlineCount} />
+        <Header user={user} onlineCount={onlineCount} enabledPlugins={enabledPlugins} />
         <div className="container" style={{ position: 'relative', zIndex: 1 }}>
           <main>{children}</main>
           <Footer />
