@@ -1,0 +1,27 @@
+{
+  "name": "ocms",
+  "version": "1.0.0",
+  "description": "OCMS - Habbo Retro CMS for Arcturus Emulator",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "db:setup": "node sql/setup.js"
+  },
+  "dependencies": {
+    "next": "^14.2.0",
+    "react": "^18.3.0",
+    "react-dom": "^18.3.0",
+    "mysql2": "^3.9.0",
+    "bcryptjs": "^2.4.3",
+    "jose": "^5.2.0",
+    "uuid": "^9.0.0",
+    "sharp": "^0.33.0"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.0",
+    "postcss": "^8.4.0",
+    "autoprefixer": "^10.4.0"
+  }
+}
