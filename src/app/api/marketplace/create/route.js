@@ -1,4 +1,3 @@
-export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import { getSessionUserId } from '@/lib/auth';
 import { query, queryOne } from '@/lib/db';
@@ -9,7 +8,7 @@ export async function POST(request) {
   if (!userId) return NextResponse.json({ error: 'Not logged in' }, { status: 401 });
 
   // Rate limit: 10 listings per 5 minutes
-  const rl = checkRateLimit(`market-create:${userId}`, 10, 300000);
+  const rl = await checkRateLimit(`market-create:${userId}`, 10, 300000);
   if (!rl.ok) return NextResponse.json({ error: `Too many listings. Try again in ${rl.retryAfter}s` }, { status: 429 });
 
   let form;

@@ -1,4 +1,3 @@
-export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import { getSessionUserId } from '@/lib/auth';
 import { query, queryOne } from '@/lib/db';
@@ -19,7 +18,7 @@ export async function POST(request) {
   if (!userId) return NextResponse.json({ error: 'Not logged in' }, { status: 401 });
 
   // Rate limit: 30 bets per minute per user
-  const rl = checkRateLimit(`gambling:${userId}`, 30, 60000);
+  const rl = await checkRateLimit(`gambling:${userId}`, 30, 60000);
   if (!rl.ok) {
     return NextResponse.json(
       { error: `Too many requests. Try again in ${rl.retryAfter}s`, retryAfter: rl.retryAfter },
@@ -262,6 +261,7 @@ export async function POST(request) {
         const playerTotal = handTotal(playerCards);
 
         if (playerTotal > 21) {
+          // Bust
           result = {
             game: 'blackjack', action: 'result',
             playerCards, dealerCards: handState.dealerHidden,
@@ -269,7 +269,30 @@ export async function POST(request) {
             win: false, bust: true, profit: -bet,
             balance: user.points,
           };
+        } else if (playerTotal === 21) {
+          // Hit to 21 — auto-stand: run dealer and settle immediately
+          let dealerCards = [...handState.dealerHidden];
+          const allUsed = [...playerCards, ...dealerCards];
+          while (handTotal(dealerCards) < 17) {
+            dealerCards.push(drawCard([...allUsed, ...dealerCards]));
+          }
+          const dealerTotal = handTotal(dealerCards);
+          let win = false, push = false;
+          if (dealerTotal > 21 || playerTotal > dealerTotal) win = true;
+          else if (playerTotal === dealerTotal) push = true;
+          const adjustment = win ? bet * 2 : push ? bet : 0;
+          if (adjustment > 0) {
+            await query('UPDATE users SET points = points + ? WHERE id = ?', [adjustment, userId]);
+          }
+          result = {
+            game: 'blackjack', action: 'result',
+            playerCards, dealerCards, playerTotal, dealerTotal,
+            win, push, blackjack: true,
+            profit: win ? bet : push ? 0 : -bet,
+            balance: user.points + adjustment,
+          };
         } else {
+          // Still playing
           result = {
             game: 'blackjack', action: 'playing',
             playerCards,

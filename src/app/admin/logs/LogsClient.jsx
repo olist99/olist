@@ -16,11 +16,13 @@ function actionColor(action) {
 
 function timeAgo(str) {
   if (!str) return '—';
-  const diff = Math.floor((Date.now() - new Date(str)) / 1000);
+  const then = str instanceof Date ? str : new Date(String(str).trim().replace(' ', 'T').replace(' UTC', '') + (String(str).endsWith('Z') ? '' : 'Z'));
+  if (isNaN(then.getTime())) return '—';
+  const diff = Math.floor((Date.now() - then.getTime()) / 1000);
   if (diff < 60) return 'just now';
   if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
   if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
-  return new Date(str).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+  return then.toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 }
 
 export default function LogsClient() {

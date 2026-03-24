@@ -1,3 +1,4 @@
+import { saveEventAction, deleteEventAction, awardCurrencyAction, awardBadgeAction } from './actions/events';
 import Link from 'next/link';
 import { query, queryOne } from '@/lib/db';
 
@@ -11,29 +12,6 @@ export default async function EventsSection({ view, sp, user }) {
       ? await queryOne('SELECT * FROM cms_events WHERE id = ?', [parseInt(sp.id)]).catch(() => null)
       : null;
 
-    async function saveEventAction(formData) {
-      'use server';
-      const { getCurrentUser } = await import('@/lib/auth');
-      const { query: db } = await import('@/lib/db');
-      const { sanitizeText } = await import('@/lib/security');
-      const { redirect } = await import('next/navigation');
-      const u = await getCurrentUser();
-      if (!u || u.rank < 3) redirect('/admin');
-      const id          = formData.get('id');
-      const title       = sanitizeText(formData.get('title') || '', 200);
-      const description = sanitizeText(formData.get('description') || '', 2000);
-      const eventDate   = formData.get('event_date') || null;
-      const endDate     = formData.get('end_date')   || null;
-      const image       = sanitizeText(formData.get('image') || '', 500);
-      if (!title) redirect('/admin?tab=events&error=Title+required');
-      if (id) {
-        await db('UPDATE cms_events SET title=?,description=?,event_date=?,end_date=?,image=? WHERE id=?', [title,description,eventDate,endDate,image,id]);
-        redirect('/admin?tab=events&success=Event+updated');
-      } else {
-        await db('INSERT INTO cms_events (title,description,event_date,end_date,image,staff_id) VALUES (?,?,?,?,?,?)', [title,description,eventDate,endDate,image,u.id]);
-        redirect('/admin?tab=events&success=Event+created');
-      }
-    }
 
     return (
       <div className="panel no-hover" style={{ padding: 24 }}>
@@ -43,7 +21,7 @@ export default async function EventsSection({ view, sp, user }) {
         </div>
         <form action={saveEventAction}>
           {event && <input type="hidden" name="id" value={event.id} />}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16, marginBottom: 16 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
             <div><label style={labelStyle}>Title *</label><input type="text" name="title" defaultValue={event?.title||''} required /></div>
             <div><label style={labelStyle}>Start Date & Time</label><input type="datetime-local" name="event_date" defaultValue={event?.event_date ? new Date(event.event_date).toISOString().slice(0,16) : ''} /></div>
           </div>
@@ -65,38 +43,12 @@ export default async function EventsSection({ view, sp, user }) {
       "SELECT * FROM cms_events WHERE event_date <= NOW() OR event_date IS NULL ORDER BY event_date DESC LIMIT 30"
     ).catch(() => []);
 
-    async function awardCurrencyAction(formData) {
-      'use server';
-      const { getCurrentUser } = await import('@/lib/auth');
-      const { query: db } = await import('@/lib/db');
-      const { redirect } = await import('next/navigation');
-      const u = await getCurrentUser();
-      if (!u || u.rank < 4) redirect('/admin');
-      const currency = ['credits','pixels','points'].includes(formData.get('currency')) ? formData.get('currency') : 'credits';
-      const amount   = Math.max(1, Math.min(10000, parseInt(formData.get('amount')) || 0));
-      const target   = formData.get('target'); // 'all' or user id
-      const reason   = `Event reward by ${u.username}`;
-      if (!amount) redirect('/admin?tab=events&view=currency&error=Invalid+amount');
-      if (target === 'all') {
-        await db(`UPDATE users SET \`${currency}\` = \`${currency}\` + ? WHERE rank >= 1`, [amount]);
-        await db('INSERT INTO cms_credit_log (user_id, admin_id, currency, amount, reason) SELECT id, ?, ?, ?, ? FROM users WHERE rank >= 1',
-          [u.id, currency, amount, reason]).catch(() => {});
-      } else {
-        const uid = parseInt(target);
-        if (uid) {
-          await db(`UPDATE users SET \`${currency}\` = \`${currency}\` + ? WHERE id = ?`, [amount, uid]);
-          await db('INSERT INTO cms_credit_log (user_id, admin_id, currency, amount, reason) VALUES (?,?,?,?,?)',
-            [uid, u.id, currency, amount, reason]).catch(() => {});
-        }
-      }
-      redirect('/admin?tab=events&view=currency&success=Currency+awarded');
-    }
 
     return (
       <div>
         <SectionHeader title="Event Currency Control" sub="Award currency to players as event rewards" back="events" />
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'min(300px, 100%) 1fr', flexWrap: 'wrap', gap: 16 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr', gap: 16 }}>
           <div className="panel no-hover" style={{ padding: 20 }}>
             <h4 style={{ fontSize: 13, fontWeight: 700, marginBottom: 14 }}>Award Currency</h4>
             <form action={awardCurrencyAction}>
@@ -132,7 +84,7 @@ export default async function EventsSection({ view, sp, user }) {
             {events.length === 0 ? (
               <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>No events found. <Link href="/admin?tab=events&view=create" style={{ color: 'var(--green)' }}>Create one</Link></p>
             ) : (
-              <div className="adm-table-wrap"><table className="table-panel">
+              <table className="table-panel">
                 <thead><tr><th>Event</th><th>Date</th></tr></thead>
                 <tbody>
                   {events.map(e => (
@@ -142,7 +94,7 @@ export default async function EventsSection({ view, sp, user }) {
                     </tr>
                   ))}
                 </tbody>
-              </table></div>
+              </table>
             )}
           </div>
         </div>
@@ -173,7 +125,7 @@ export default async function EventsSection({ view, sp, user }) {
           return (
             <div key={group} className="panel no-hover" style={{ padding: 20, marginBottom: 12 }}>
               <h4 style={{ fontSize: 13, fontWeight: 700, marginBottom: 12, color: 'var(--green)' }}>{group} <span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 400 }}>({groupQuests.length})</span></h4>
-              <div className="adm-table-wrap"><table className="table-panel">
+              <table className="table-panel">
                 <thead><tr><th>ID</th><th>Name</th><th>Reward</th><th>Reward Type</th><th>Achievement</th></tr></thead>
                 <tbody>
                   {groupQuests.map(q => (
@@ -186,7 +138,7 @@ export default async function EventsSection({ view, sp, user }) {
                     </tr>
                   ))}
                 </tbody>
-              </table></div>
+              </table>
             </div>
           );
         })}
@@ -213,34 +165,12 @@ export default async function EventsSection({ view, sp, user }) {
       ).catch(() => []);
     }
 
-    async function awardBadgeAction(formData) {
-      'use server';
-      const { getCurrentUser } = await import('@/lib/auth');
-      const { query: db } = await import('@/lib/db');
-      const { redirect } = await import('next/navigation');
-      const u = await getCurrentUser();
-      if (!u || u.rank < 4) redirect('/admin');
-      const badgeCode = (formData.get('badge_code') || '').trim().toUpperCase().replace(/[^A-Z0-9_]/g, '');
-      const target    = formData.get('target'); // 'all' or user id
-      if (!badgeCode) redirect('/admin?tab=events&view=badge-rewards&error=Badge+code+required');
-      if (target === 'all') {
-        const users = await db('SELECT id FROM users WHERE rank >= 1').catch(() => []);
-        for (const user of users) {
-          await db('INSERT IGNORE INTO users_badges (user_id, badge_code) VALUES (?, ?)', [user.id, badgeCode]).catch(() => {});
-        }
-      } else {
-        const uid = parseInt(target);
-        if (uid) await db('INSERT IGNORE INTO users_badges (user_id, badge_code) VALUES (?, ?)', [uid, badgeCode]);
-      }
-      const redir = userId ? `/admin?tab=events&view=badge-rewards&id=${userId}&success=Badge+${badgeCode}+awarded` : `/admin?tab=events&view=badge-rewards&success=Badge+${badgeCode}+awarded`;
-      redirect(redir);
-    }
 
     return (
       <div>
         <SectionHeader title="Badge Rewards" sub="Award event badges to players" back="events" />
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'min(280px, 100%) 1fr', flexWrap: 'wrap', gap: 16 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '280px 1fr', gap: 16 }}>
           <div className="panel no-hover" style={{ padding: 20 }}>
             <h4 style={{ fontSize: 13, fontWeight: 700, marginBottom: 14 }}>Award Badge</h4>
 
@@ -259,6 +189,7 @@ export default async function EventsSection({ view, sp, user }) {
             ))}
 
             <form action={awardBadgeAction}>
+              <input type="hidden" name="current_user_id" value={targetUser ? targetUser.id : ''} />
               <div style={{ marginBottom: 12 }}>
                 <label style={labelStyle}>Badge Code *</label>
                 <input type="text" name="badge_code" placeholder="e.g. EVENT2024" required style={{ textTransform: 'uppercase' }} />
@@ -312,17 +243,6 @@ export default async function EventsSection({ view, sp, user }) {
     'SELECT e.*, u.username AS staff_name FROM cms_events e LEFT JOIN users u ON u.id = e.staff_id ORDER BY e.event_date DESC LIMIT 50'
   ).catch(() => []);
 
-  async function deleteEventAction(formData) {
-    'use server';
-    const { getCurrentUser } = await import('@/lib/auth');
-    const { query: db } = await import('@/lib/db');
-    const { redirect } = await import('next/navigation');
-    const u = await getCurrentUser();
-    if (!u || u.rank < 3) redirect('/admin');
-    const id = parseInt(formData.get('event_id'));
-    if (id) await db('DELETE FROM cms_events WHERE id = ?', [id]);
-    redirect('/admin?tab=events&success=Event+deleted');
-  }
 
   return (
     <div className="panel no-hover" style={{ padding: 20 }}>
@@ -333,7 +253,7 @@ export default async function EventsSection({ view, sp, user }) {
       {eventsData.length === 0 ? (
         <p style={{ color: 'var(--text-muted)', fontSize: 12, textAlign: 'center', padding: 20 }}>No events scheduled.</p>
       ) : (
-        <div className="adm-table-wrap"><table className="table-panel">
+        <table className="table-panel">
           <thead><tr><th>Event</th><th>Start</th><th>Status</th><th>Staff</th><th></th></tr></thead>
           <tbody>
             {eventsData.map(e => {
@@ -373,7 +293,7 @@ export default async function EventsSection({ view, sp, user }) {
               );
             })}
           </tbody>
-        </table></div>
+        </table>
       )}
     </div>
   );

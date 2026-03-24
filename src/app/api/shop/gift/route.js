@@ -1,4 +1,3 @@
-export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import { query, queryOne } from '@/lib/db';
@@ -9,7 +8,7 @@ export async function POST(request) {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: 'Not logged in' }, { status: 401 });
 
-  const rl = checkRateLimit(`shop-gift:${user.id}`, 5, 60000);
+  const rl = await checkRateLimit(`shop-gift:${user.id}`, 5, 60000);
   if (!rl.ok) return NextResponse.json({ error: 'Too many gifts. Slow down.' }, { status: 429 });
 
   let body;
@@ -51,8 +50,22 @@ export async function POST(request) {
     if (!existing) await query('INSERT INTO users_badges (user_id, badge_code) VALUES (?, ?)', [recipient.id, item.give_badge]);
   }
 
-  // Decrease stock
-  if (item.stock > 0) await query('UPDATE cms_shop_items SET stock = stock - 1 WHERE id = ?', [itemId]);
+  // FIX #2: Decrement stock atomically — WHERE stock > 0 prevents negative stock
+  // when two simultaneous buyers both pass the stock === 0 check above.
+  if (item.stock > 0) {
+    const stockUpd = await query(
+      'UPDATE cms_shop_items SET stock = stock - 1 WHERE id = ? AND stock > 0',
+      [itemId]
+    );
+    if (stockUpd.affectedRows === 0) {
+      // Stock ran out between our read and write — refund the sender and bail
+      await query(
+        `UPDATE users SET \`${col}\` = \`${col}\` + ? WHERE id = ?`,
+        [item.price, user.id]
+      );
+      return NextResponse.json({ error: 'Item just sold out' }, { status: 409 });
+    }
+  }
 
   // Record purchase
   await query(

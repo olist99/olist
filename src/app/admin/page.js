@@ -14,8 +14,7 @@ import PluginsSection from './sections/PluginsSection';
 import GamblingSection from './sections/GamblingSection';
 import LogsSection from './sections/LogsSection';
 import SettingsSection from './sections/SettingsSection';
-
-export const dynamic = 'force-dynamic';
+import TokenShopSection from './sections/TokenShopSection';
 
 export const metadata = { title: 'Housekeeping' };
 
@@ -26,9 +25,6 @@ const TAB_MAP = {
   'news-edit':    { tab: 'community',  view: 'news-edit' },
   'referrals':    { tab: 'community',  view: 'referrals' },
   'tickets':      { tab: 'moderation', view: 'reports' },
-  'shop':         { tab: 'economy',    view: null },
-  'shop-create':  { tab: 'economy',    view: 'shop-create' },
-  'shop-edit':    { tab: 'economy',    view: 'shop-edit' },
   'cases':        { tab: 'economy',    view: 'cases' },
   'case-create':  { tab: 'economy',    view: 'case-create' },
   'case-edit':    { tab: 'economy',    view: 'case-edit' },
@@ -76,8 +72,7 @@ const SECTIONS = [
     { label: 'Auto Spam Detection',       view: 'spam-detection' },
   ]},
   { label: 'Economy Management',   key: 'economy',       minRank: 5, views: [
-    { label: 'Shop Manager',              view: null },
-    { label: 'Rare Releases',             view: 'rare-releases' },
+    { label: 'Rare Releases',             view: null },
     { label: 'Marketplace Listings',      view: 'marketplace' },
     { label: 'Auction House',             href: '/auction' },
     { label: 'Credit Statistics',         view: 'credit-stats' },
@@ -87,8 +82,8 @@ const SECTIONS = [
     { label: 'Economy Alerts',            view: 'alerts' },
   ]},
   { label: 'Hotel Content',        key: 'hotel-content', minRank: 5, views: [
-    { label: 'Catalog Editor',            href: '/admin/catalog' },
-    { label: 'Furniture Manager',         href: '/admin/furniture' },
+    { label: 'Catalog Editor',            view: 'catalog' },
+    { label: 'Furniture Manager',         view: 'furniture' },
     { label: 'Badge Manager',             view: 'badges' },
     { label: 'Navigator Categories',      view: 'navigator' },
     { label: 'Achievements Manager',      view: 'achievements' },
@@ -114,6 +109,7 @@ const SECTIONS = [
     { label: 'Report Posts',              view: 'report-posts' },
     { label: 'User Guestbooks',           view: 'guestbooks' },
     { label: 'Community Contests',        view: 'contests' },
+    { label: 'Polls & Surveys',           view: 'polls' },
   ]},
   { label: 'Gambling',             key: 'gambling',      minRank: 5, views: [
     { label: 'Statistics',                view: null },
@@ -129,8 +125,19 @@ const SECTIONS = [
     { label: 'Rank Changes',              view: 'rank-changes' },
     { label: 'Rare Spawns',               view: 'rare-spawns' },
   ]},
-  { label: 'Settings',             key: 'settings',      minRank: 6, views: [
+  { label: 'Settings',             key: 'settings',      minRank: 5, views: [
     { label: 'Site Settings',             view: null },
+    { label: 'Announcement Banner',       view: 'announcement' },
+  ]},
+  { label: 'Token Shop',      key: 'token-shop',    minRank: 7, views: [
+    { label: 'Purchase Logs',             view: null },
+    { label: 'Voucher Codes',             view: 'vouchers' },
+    { label: 'Flash Sales',               view: 'flash-sales' },
+    { label: 'Token Orders',              view: 'orders' },
+    { label: 'Shop Items',                view: 'items' },
+    { label: 'Token Packages',            view: 'packages' },
+    { label: 'VIP Subscriptions',         view: 'vip' },
+    { label: 'Grant Tokens',              view: 'grant' },
   ]},
 ];
 
@@ -168,56 +175,10 @@ export default async function AdminPage({ searchParams }) {
       {success && <div className="flash flash-success" style={{ marginBottom: 16 }}>{decodeURIComponent(success).replace(/[<>]/g, '')}</div>}
       {error   && <div className="flash flash-error"   style={{ marginBottom: 16 }}>{decodeURIComponent(error).replace(/[<>]/g, '')}</div>}
 
-      <div className="adm-layout" style={{ display: 'grid', gridTemplateColumns: '220px 1fr', gap: 20, alignItems: 'start' }}>
+      <div className="grid grid-cols-[220px_1fr] gap-5 max-md:grid-cols-1" style={{ alignItems: 'start' }}>
 
         {/* ── Sidebar ── */}
-        <div>
-          <details className="adm-sidebar-toggle">
-            <summary className="btn btn-secondary btn-sm" style={{ cursor: 'pointer', listStyle: 'none', display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-              ☰ Menu — {SECTIONS.find(s => s.key === tab)?.label || 'Navigation'}
-            </summary>
-            <div className="bg-bg-secondary border border-border rounded-lg" style={{ marginTop: 8, overflow: 'hidden' }}>
-              {SECTIONS.filter(s => user.rank >= s.minRank).map(s => {
-                const isActive = s.key === tab;
-                return (
-                  <div key={s.key}>
-                    <Link href={`/admin?tab=${s.key}`} style={{
-                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                      padding: '9px 14px', textDecoration: 'none', fontSize: 12, fontWeight: 700,
-                      color: isActive ? 'var(--green)' : 'var(--text-primary)',
-                      background: isActive ? 'rgba(52,189,89,0.07)' : 'transparent',
-                      borderLeft: isActive ? '2px solid var(--green)' : '2px solid transparent',
-                    }}>
-                      {s.label}
-                    </Link>
-                    {isActive && (
-                      <div style={{ background: 'rgba(0,0,0,0.15)', paddingBottom: 4 }}>
-                        {s.views.map((sv, i) => {
-                          if (sv.href) return (
-                            <a key={i} href={sv.href} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 14px 6px 22px', fontSize: 11, color: 'var(--text-secondary)', textDecoration: 'none' }}>
-                              {sv.label} <span style={{ fontSize: 9, color: 'var(--text-muted)' }}>↗</span>
-                            </a>
-                          );
-                          const isViewActive = view === sv.view || (sv.view === null && view === null);
-                          return (
-                            <Link key={i} href={`/admin?tab=${s.key}${sv.view ? `&view=${sv.view}` : ''}`} style={{
-                              display: 'block', padding: '6px 14px 6px 22px', fontSize: 11, textDecoration: 'none',
-                              fontWeight: isViewActive ? 700 : 500,
-                              color: isViewActive ? 'var(--green)' : 'var(--text-secondary)',
-                            }}>
-                              {sv.label}
-                            </Link>
-                          );
-                        })}
-                      </div>
-                    )}
-                    <div style={{ height: 1, background: 'rgba(255,255,255,0.04)' }} />
-                  </div>
-                );
-              })}
-            </div>
-          </details>
-          <div className="bg-bg-secondary border border-border rounded-lg adm-sidebar-desktop" style={{ position: 'sticky', top: 20, overflow: 'hidden' }}>
+        <div className="bg-bg-secondary border border-border rounded-lg" style={{ position: 'sticky', top: 20, overflow: 'hidden' }}>
           {SECTIONS.filter(s => user.rank >= s.minRank).map(s => {
             const isActive = s.key === tab;
             return (
@@ -265,7 +226,6 @@ export default async function AdminPage({ searchParams }) {
               </div>
             );
           })}
-          </div>
         </div>
 
         {/* ── Main content ── */}
@@ -282,6 +242,7 @@ export default async function AdminPage({ searchParams }) {
           {tab === 'plugins'       && <PluginsSection       view={view} sp={sp} user={user} />}
           {tab === 'logs'          && <LogsSection          view={view} sp={sp} user={user} />}
           {tab === 'settings'      && <SettingsSection      view={view} sp={sp} user={user} />}
+          {tab === 'token-shop'    && user.rank >= 7 && <TokenShopSection   view={view} sp={sp} user={user} />}
         </div>
       </div>
     </div>

@@ -1,8 +1,8 @@
-export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import { getSessionUserId, getCurrentUser } from '@/lib/auth';
 import { query, queryOne } from '@/lib/db';
 import { sanitizeText, safeInt, oneOf, checkRateLimit } from '@/lib/security';
+import { sendNotification } from '@/lib/notifications';
 
 export async function POST(request) {
   const userId = await getSessionUserId();
@@ -18,7 +18,7 @@ export async function POST(request) {
   // Create ticket
   if (action === 'create') {
     // Rate limit: 3 tickets per 10 minutes
-    const rl = checkRateLimit(`ticket-create:${userId}`, 3, 600000);
+    const rl = await checkRateLimit(`ticket-create:${userId}`, 3, 600000);
     if (!rl.ok) return NextResponse.json({ error: `Too many tickets. Try again in ${rl.retryAfter}s` }, { status: 429 });
 
     const subject = sanitizeText(body.subject, 200);
@@ -44,7 +44,7 @@ export async function POST(request) {
   // Reply to ticket
   if (action === 'reply') {
     // Rate limit: 10 replies per minute
-    const rl = checkRateLimit(`ticket-reply:${userId}`, 10, 60000);
+    const rl = await checkRateLimit(`ticket-reply:${userId}`, 10, 60000);
     if (!rl.ok) return NextResponse.json({ error: `Too many replies. Try again in ${rl.retryAfter}s` }, { status: 429 });
 
     const ticketId = safeInt(body.ticketId, 1);
@@ -73,7 +73,34 @@ export async function POST(request) {
     );
 
     const newStatus = isStaff ? 'answered' : 'open';
-    await query('UPDATE cms_tickets SET status = ? WHERE id = ?', [newStatus, ticketId]);
+    await query('UPDATE cms_tickets SET status = ?, updated_at = NOW() WHERE id = ?', [newStatus, ticketId]);
+
+    // Notify the other party
+    if (isStaff && ticket.user_id !== userId) {
+      // Staff replied — notify the ticket owner
+      await sendNotification(ticket.user_id, {
+        type: 'general',
+        title: 'Staff replied to your ticket',
+        message: `Ticket #${ticketId}: "${ticket.subject?.slice(0, 60) || ''}"`,
+        link: `/rules/tickets/${ticketId}`,
+      });
+    } else if (!isStaff) {
+      // User replied — notify any staff who have replied to this ticket before
+      const staffRepliers = await query(
+        'SELECT DISTINCT user_id FROM cms_ticket_messages WHERE ticket_id = ? AND is_staff = 1',
+        [ticketId]
+      ).catch(() => []);
+      for (const s of staffRepliers) {
+        if (s.user_id !== userId) {
+          await sendNotification(s.user_id, {
+            type: 'general',
+            title: 'User replied to a ticket',
+            message: `Ticket #${ticketId}: "${ticket.subject?.slice(0, 60) || ''}"`,
+            link: `/rules/tickets/${ticketId}`,
+          });
+        }
+      }
+    }
 
     return NextResponse.json({ ok: true });
   }

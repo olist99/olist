@@ -109,7 +109,7 @@ export async function POST(request) {
 
   // ── Write guestbook entry ──
   if (action === 'guestbook_post') {
-    const rl = checkRateLimit(`guestbook:${user.id}`, 5, 60000);
+    const rl = await checkRateLimit(`guestbook:${user.id}`, 5, 60000);
     if (!rl.ok) return NextResponse.json({ error: 'You\'re posting too fast. Wait a moment.' }, { status: 429 });
 
     const profileId = safeInt(body.profile_id, 1);

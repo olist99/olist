@@ -1,3 +1,4 @@
+import { deleteCaseAction } from './actions/gambling';
 import Link from 'next/link';
 import { query, queryScalar } from '@/lib/db';
 import CaseBuilder from '@/app/admin/CaseBuilder';
@@ -21,20 +22,6 @@ export default async function GamblingSection({ view, sp, user }) {
        GROUP BY c.id ORDER BY c.created_at DESC`
     ).catch(() => null);
 
-    async function deleteCaseAction(formData) {
-      'use server';
-      const { getCurrentUser } = await import('@/lib/auth');
-      const { query: db } = await import('@/lib/db');
-      const { redirect } = await import('next/navigation');
-      const u = await getCurrentUser();
-      if (!u || u.rank < 5) redirect('/admin');
-      const id = parseInt(formData.get('id'));
-      if (id) {
-        await db('DELETE FROM cms_case_items WHERE case_id = ?', [id]);
-        await db('DELETE FROM cms_cases WHERE id = ?', [id]);
-      }
-      redirect('/admin?tab=gambling&view=cases&success=Case+deleted');
-    }
 
     return (
       <div>
@@ -51,7 +38,7 @@ export default async function GamblingSection({ view, sp, user }) {
           </div>
         ) : (
           <div className="panel no-hover" style={{ padding: 20 }}>
-            <div className="adm-table-wrap"><table className="table-panel">
+            <table className="table-panel">
               <thead><tr><th>Image</th><th>Name</th><th>Price</th><th>Items</th><th>Status</th><th>Actions</th></tr></thead>
               <tbody>
                 {cases.map(c => (
@@ -71,7 +58,7 @@ export default async function GamblingSection({ view, sp, user }) {
                   </tr>
                 ))}
               </tbody>
-            </table></div>
+            </table>
           </div>
         )}
       </div>
@@ -129,7 +116,7 @@ export default async function GamblingSection({ view, sp, user }) {
             {logs.length === 0 ? (
               <p style={{ color: 'var(--text-muted)', fontSize: 12, textAlign: 'center', padding: 20 }}>No gambling activity yet.</p>
             ) : (
-              <div className="adm-table-wrap"><table className="table-panel">
+              <table className="table-panel">
                 <thead><tr><th>Player</th><th>Game</th><th>Bet</th><th>Result</th><th>Detail</th><th>Time</th></tr></thead>
                 <tbody>
                   {logs.map((l, i) => (
@@ -145,7 +132,7 @@ export default async function GamblingSection({ view, sp, user }) {
                     </tr>
                   ))}
                 </tbody>
-              </table></div>
+              </table>
             )}
           </div>
         )}
@@ -208,7 +195,7 @@ export default async function GamblingSection({ view, sp, user }) {
         <>
           {/* ── 24h Stats ── */}
           <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 1 }}>Last 24 Hours</p>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 12, marginBottom: 20 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 20 }}>
             {[
               { label: 'Bets Placed',       val: fmt(bets24h),        color: '#3b82f6' },
               { label: 'Diamonds Wagered',   val: fmt(wagered24h),     color: '#f5c842' },
@@ -223,7 +210,7 @@ export default async function GamblingSection({ view, sp, user }) {
 
           {/* ── All-time Stats ── */}
           <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 1 }}>All Time</p>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 12, marginBottom: 20 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 20 }}>
             {[
               { label: 'Total Bets',          val: fmt(totalBets),       color: '#3b82f6' },
               { label: 'Total Wagered',        val: fmt(totalWagered),    color: '#f5c842' },
@@ -237,14 +224,14 @@ export default async function GamblingSection({ view, sp, user }) {
             ))}
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16, marginBottom: 16 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
             {/* Per-game breakdown 24h */}
             <div className="panel no-hover" style={{ padding: 20 }}>
               <h4 style={{ fontSize: 13, fontWeight: 700, marginBottom: 12 }}>By Game — Last 24h</h4>
               {byGame24h.length === 0 ? (
                 <p style={{ color: 'var(--text-muted)', fontSize: 12, textAlign: 'center', padding: 12 }}>No activity in last 24h</p>
               ) : (
-                <div className="adm-table-wrap"><table className="table-panel">
+                <table className="table-panel">
                   <thead><tr><th>Game</th><th>Bets</th><th>Wagered</th><th>House P/L</th></tr></thead>
                   <tbody>
                     {byGame24h.map((g, i) => (
@@ -258,7 +245,7 @@ export default async function GamblingSection({ view, sp, user }) {
                       </tr>
                     ))}
                   </tbody>
-                </table></div>
+                </table>
               )}
             </div>
 
@@ -268,7 +255,7 @@ export default async function GamblingSection({ view, sp, user }) {
               {byGame.length === 0 ? (
                 <p style={{ color: 'var(--text-muted)', fontSize: 12, textAlign: 'center', padding: 12 }}>No gambling data yet</p>
               ) : (
-                <div className="adm-table-wrap"><table className="table-panel">
+                <table className="table-panel">
                   <thead><tr><th>Game</th><th>Bets</th><th>Wagered</th><th>House P/L</th></tr></thead>
                   <tbody>
                     {byGame.map((g, i) => (
@@ -282,16 +269,16 @@ export default async function GamblingSection({ view, sp, user }) {
                       </tr>
                     ))}
                   </tbody>
-                </table></div>
+                </table>
               )}
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16, marginBottom: 16 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
             {/* Top winners */}
             <div className="panel no-hover" style={{ padding: 20 }}>
               <h4 style={{ fontSize: 13, fontWeight: 700, marginBottom: 12 }}>Top Winners (all time)</h4>
-              <div className="adm-table-wrap"><table className="table-panel">
+              <table className="table-panel">
                 <thead><tr><th>#</th><th>Player</th><th>Net Won</th></tr></thead>
                 <tbody>
                   {topWinners.length === 0 && <tr><td colSpan={3} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 10 }}>No data</td></tr>}
@@ -303,13 +290,13 @@ export default async function GamblingSection({ view, sp, user }) {
                     </tr>
                   ))}
                 </tbody>
-              </table></div>
+              </table>
             </div>
 
             {/* Top losers */}
             <div className="panel no-hover" style={{ padding: 20 }}>
               <h4 style={{ fontSize: 13, fontWeight: 700, marginBottom: 12 }}>Top Losers (all time)</h4>
-              <div className="adm-table-wrap"><table className="table-panel">
+              <table className="table-panel">
                 <thead><tr><th>#</th><th>Player</th><th>Net Lost</th></tr></thead>
                 <tbody>
                   {topLosers.length === 0 && <tr><td colSpan={3} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 10 }}>No data</td></tr>}
@@ -321,7 +308,7 @@ export default async function GamblingSection({ view, sp, user }) {
                     </tr>
                   ))}
                 </tbody>
-              </table></div>
+              </table>
             </div>
           </div>
 
@@ -331,7 +318,7 @@ export default async function GamblingSection({ view, sp, user }) {
               <h4 style={{ fontSize: 13, fontWeight: 700 }}>Recent Bets</h4>
               <Link href="/admin?tab=gambling&view=logs" style={{ fontSize: 11, color: 'var(--green)' }}>View all →</Link>
             </div>
-            <div className="adm-table-wrap"><table className="table-panel">
+            <table className="table-panel">
               <thead><tr><th>Player</th><th>Game</th><th>Bet</th><th>Result</th><th>Detail</th><th>Time</th></tr></thead>
               <tbody>
                 {recentLogs.length === 0 && <tr><td colSpan={6} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 12 }}>No bets yet</td></tr>}
@@ -348,7 +335,7 @@ export default async function GamblingSection({ view, sp, user }) {
                   </tr>
                 ))}
               </tbody>
-            </table></div>
+            </table>
           </div>
         </>
       )}

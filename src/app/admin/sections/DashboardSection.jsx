@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { query, queryScalar } from '@/lib/db';
 import { formatNumber } from '@/lib/utils';
+import { getAllPlugins } from '@/lib/plugins';
 
 const HABBO_IMG = process.env.NEXT_PUBLIC_HABBO_IMG || 'https://www.habbo.com/habbo-imaging/avatarimage';
 
@@ -28,7 +29,7 @@ export default async function DashboardSection({ view, sp, user }) {
     queryScalar("SELECT COUNT(*) FROM cms_forum_replies WHERE created_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR)").catch(() =>
       queryScalar("SELECT COUNT(*) FROM cms_forum_posts WHERE created_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR)").catch(() => null)
     ),
-    queryScalar("SELECT COUNT(*) FROM cms_plugins WHERE active = 1").catch(() => null),
+    queryScalar("SELECT COUNT(*) FROM cms_settings WHERE `key` LIKE 'plugin_%' AND `value` = '1'").catch(() => 0),
   ]);
 
   // ── Users Online ──────────────────────────────────────────────────────────
@@ -43,7 +44,7 @@ export default async function DashboardSection({ view, sp, user }) {
           {list.length === 0 ? (
             <p style={{ color: 'var(--text-muted)', fontSize: 12, textAlign: 'center', padding: 20 }}>No users online right now.</p>
           ) : (
-            <div className="adm-table-wrap"><table className="table-panel">
+            <table className="table-panel">
               <thead><tr><th>Avatar</th><th>Username</th><th>Rank</th><th>Actions</th></tr></thead>
               <tbody>
                 {list.map(u => (
@@ -55,7 +56,7 @@ export default async function DashboardSection({ view, sp, user }) {
                   </tr>
                 ))}
               </tbody>
-            </table></div>
+            </table>
           )}
         </div>
       </div>
@@ -74,7 +75,7 @@ export default async function DashboardSection({ view, sp, user }) {
           {list.length === 0 ? (
             <p style={{ color: 'var(--text-muted)', fontSize: 12, textAlign: 'center', padding: 20 }}>No new registrations in the last 24 hours.</p>
           ) : (
-            <div className="adm-table-wrap"><table className="table-panel">
+            <table className="table-panel">
               <thead><tr><th>ID</th><th>Username</th><th>Email</th><th>IP</th><th>Joined</th><th></th></tr></thead>
               <tbody>
                 {list.map(u => (
@@ -88,7 +89,7 @@ export default async function DashboardSection({ view, sp, user }) {
                   </tr>
                 ))}
               </tbody>
-            </table></div>
+            </table>
           )}
         </div>
       </div>
@@ -141,7 +142,7 @@ export default async function DashboardSection({ view, sp, user }) {
             {gotwUsers.length === 0 ? (
               <p style={{ color: 'var(--text-muted)', fontSize: 12, textAlign: 'center', padding: 20 }}>No players have GOTW points.</p>
             ) : (
-              <div className="adm-table-wrap"><table className="table-panel">
+              <table className="table-panel">
                 <thead><tr><th>ID</th><th>Username</th><th>GOTW</th></tr></thead>
                 <tbody>
                   {gotwUsers.map(u => (
@@ -152,7 +153,7 @@ export default async function DashboardSection({ view, sp, user }) {
                     </tr>
                   ))}
                 </tbody>
-              </table></div>
+              </table>
             )}
           </div>
         </div>
@@ -259,7 +260,7 @@ export default async function DashboardSection({ view, sp, user }) {
               {creditLog.length === 0 ? (
                 <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>No transactions logged today yet. Credit changes via Admin → User Profile will appear here.</p>
               ) : (
-                <div className="adm-table-wrap"><table className="table-panel">
+                <table className="table-panel">
                   <thead><tr><th>Time</th><th>Player</th><th>Currency</th><th>Amount</th><th>After</th><th>Reason</th><th>By</th></tr></thead>
                   <tbody>
                     {creditLog.map((l, i) => (
@@ -274,7 +275,7 @@ export default async function DashboardSection({ view, sp, user }) {
                       </tr>
                     ))}
                   </tbody>
-                </table></div>
+                </table>
               )}
             </div>
           </div>
@@ -283,7 +284,7 @@ export default async function DashboardSection({ view, sp, user }) {
         {/* Top credit holders always shown */}
         <div className="panel no-hover" style={{ padding: 20 }}>
           <h4 style={{ fontSize: 13, fontWeight: 700, marginBottom: 14 }}>Top Credit Holders</h4>
-          <div className="adm-table-wrap"><table className="table-panel">
+          <table className="table-panel">
             <thead><tr><th>Username</th><th>Credits</th><th>Duckets</th><th>Diamonds</th></tr></thead>
             <tbody>
               {topCredits.map(u => (
@@ -295,7 +296,7 @@ export default async function DashboardSection({ view, sp, user }) {
                 </tr>
               ))}
             </tbody>
-          </table></div>
+          </table>
         </div>
       </div>
     );
@@ -316,7 +317,7 @@ export default async function DashboardSection({ view, sp, user }) {
     return (
       <div>
         <SectionHeader title="Marketplace Volume (24h)" sub={`${parseInt(creditVol).toLocaleString()} credits · ${parseInt(diamondVol).toLocaleString()} diamonds traded`} back="dashboard" />
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 12, marginBottom: 12 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
           <div className="panel no-hover" style={{ padding: '14px 18px' }}>
             <div style={{ fontSize: 20, fontWeight: 800, color: '#a442c2' }}>{parseInt(creditVol).toLocaleString()}<span style={{ fontSize: 12, marginLeft: 4 }}>credits</span></div>
             <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>Credits traded (24h)</div>
@@ -330,7 +331,7 @@ export default async function DashboardSection({ view, sp, user }) {
           {recent.length === 0 ? (
             <p style={{ color: 'var(--text-muted)', fontSize: 12, textAlign: 'center', padding: 20 }}>No marketplace sales in the last 24 hours.</p>
           ) : (
-            <div className="adm-table-wrap"><table className="table-panel">
+            <table className="table-panel">
               <thead><tr><th>Item</th><th>Seller</th><th>Price</th><th>Currency</th><th>Sold At</th></tr></thead>
               <tbody>
                 {recent.map((r, i) => (
@@ -343,7 +344,7 @@ export default async function DashboardSection({ view, sp, user }) {
                   </tr>
                 ))}
               </tbody>
-            </table></div>
+            </table>
           )}
         </div>
       </div>
@@ -375,7 +376,7 @@ export default async function DashboardSection({ view, sp, user }) {
     return (
       <div>
         <SectionHeader title="Auction House" sub={`${active.length} active auctions · ${topBids} bids placed (24h)`} back="dashboard" />
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 12, marginBottom: 12 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
           <div className="panel no-hover" style={{ padding: '14px 18px' }}>
             <div style={{ fontSize: 20, fontWeight: 800, color: '#a0b4ff' }}>{active.length}</div>
             <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>Active auctions</div>
@@ -388,7 +389,7 @@ export default async function DashboardSection({ view, sp, user }) {
         {active.length > 0 && (
           <div className="panel no-hover" style={{ padding: 20, marginBottom: 12 }}>
             <h4 style={{ fontSize: 13, fontWeight: 700, marginBottom: 12 }}>Active Auctions</h4>
-            <div className="adm-table-wrap"><table className="table-panel">
+            <table className="table-panel">
               <thead><tr><th>Title</th><th>Type</th><th>Top Bid</th><th>Bidder</th><th>Ends</th></tr></thead>
               <tbody>
                 {active.map(a => (
@@ -401,13 +402,13 @@ export default async function DashboardSection({ view, sp, user }) {
                   </tr>
                 ))}
               </tbody>
-            </table></div>
+            </table>
           </div>
         )}
         {recent.length > 0 && (
           <div className="panel no-hover" style={{ padding: 20 }}>
             <h4 style={{ fontSize: 13, fontWeight: 700, marginBottom: 12 }}>Recent Bids (24h)</h4>
-            <div className="adm-table-wrap"><table className="table-panel">
+            <table className="table-panel">
               <thead><tr><th>Auction</th><th>Bidder</th><th>Amount</th><th>Currency</th><th>Time</th></tr></thead>
               <tbody>
                 {recent.map((b, i) => (
@@ -420,7 +421,7 @@ export default async function DashboardSection({ view, sp, user }) {
                   </tr>
                 ))}
               </tbody>
-            </table></div>
+            </table>
           </div>
         )}
         {active.length === 0 && recent.length === 0 && (
@@ -466,10 +467,10 @@ export default async function DashboardSection({ view, sp, user }) {
             <p style={{ color: 'var(--text-muted)', fontSize: 12 }}>No forum activity in the last 24 hours.</p>
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 12, marginBottom: 12 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
             <div className="panel no-hover" style={{ padding: 20 }}>
               <h4 style={{ fontSize: 13, fontWeight: 700, marginBottom: 12 }}>Top Posters (24h)</h4>
-              <div className="adm-table-wrap"><table className="table-panel">
+              <table className="table-panel">
                 <thead><tr><th>Player</th><th>Posts</th></tr></thead>
                 <tbody>
                   {topPosters.map((p, i) => (
@@ -479,11 +480,11 @@ export default async function DashboardSection({ view, sp, user }) {
                     </tr>
                   ))}
                 </tbody>
-              </table></div>
+              </table>
             </div>
             <div className="panel no-hover" style={{ padding: 20 }}>
               <h4 style={{ fontSize: 13, fontWeight: 700, marginBottom: 12 }}>Most Active Threads (24h)</h4>
-              <div className="adm-table-wrap"><table className="table-panel">
+              <table className="table-panel">
                 <thead><tr><th>Thread</th><th>Replies</th></tr></thead>
                 <tbody>
                   {threadActivity.map((t, i) => (
@@ -493,7 +494,7 @@ export default async function DashboardSection({ view, sp, user }) {
                     </tr>
                   ))}
                 </tbody>
-              </table></div>
+              </table>
             </div>
           </div>
         )}
@@ -503,36 +504,35 @@ export default async function DashboardSection({ view, sp, user }) {
 
   // ── Plugin Volume ─────────────────────────────────────────────────────────
   if (view === 'plugin-volume') {
-    const plugins = await query('SELECT * FROM cms_plugins ORDER BY active DESC, name ASC').catch(() => null);
+    const pluginRows = await query("SELECT `key`, `value` FROM cms_settings WHERE `key` LIKE 'plugin_%'").catch(() => []);
+    const pluginStateMap = {};
+    for (const row of pluginRows) pluginStateMap[row.key.replace('plugin_', '')] = row.value == 1;
+    const plugins = getAllPlugins().map(p => ({
+      ...p,
+      enabled: p.slug in pluginStateMap ? pluginStateMap[p.slug] : p.enabled,
+    }));
+    const activeCount = plugins.filter(p => p.enabled).length;
     return (
       <div>
-        <SectionHeader title="Plugin Volume" sub={plugins ? `${plugins.filter(p => p.active).length} active plugins` : 'Plugin overview'} back="dashboard" />
-        {plugins === null ? (
-          <div className="panel no-hover" style={{ padding: 24 }}>
-            <p style={{ fontSize: 13, fontWeight: 700, color: '#f5a623', marginBottom: 8 }}>cms_plugins table not found</p>
-            <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>The plugin system table has not been created yet. Install at least one plugin to initialise the table.</p>
-            <Link href="/admin?tab=plugins" className="btn btn-primary btn-sm" style={{ marginTop: 12 }}>Go to Plugin Manager</Link>
-          </div>
-        ) : (
-          <div className="panel no-hover" style={{ padding: 20 }}>
-            {plugins.length === 0 ? (
-              <p style={{ fontSize: 12, color: 'var(--text-muted)', textAlign: 'center', padding: 20 }}>No plugins installed.</p>
-            ) : (
-              <div className="adm-table-wrap"><table className="table-panel">
-                <thead><tr><th>Plugin</th><th>Version</th><th>Status</th></tr></thead>
-                <tbody>
-                  {plugins.map((p, i) => (
-                    <tr key={i}>
-                      <td style={{ fontWeight: 700 }}>{p.name || p.plugin_name || `Plugin #${p.id}`}</td>
-                      <td style={{ fontSize: 11, color: 'var(--text-muted)' }}>{p.version || '—'}</td>
-                      <td><span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 4, color: p.active ? '#34bd59' : '#EF5856', background: p.active ? 'rgba(52,189,89,0.12)' : 'rgba(239,88,86,0.12)' }}>{p.active ? 'Active' : 'Inactive'}</span></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table></div>
-            )}
-          </div>
-        )}
+        <SectionHeader title="Plugin Volume" sub={`${activeCount} of ${plugins.length} plugins active`} back="dashboard" />
+        <div className="panel no-hover" style={{ padding: 20 }}>
+          <table className="table-panel">
+            <thead><tr><th>Plugin</th><th>Version</th><th>Page</th><th>Status</th></tr></thead>
+            <tbody>
+              {plugins.map((p, i) => (
+                <tr key={i}>
+                  <td style={{ fontWeight: 700 }}>{p.name}</td>
+                  <td style={{ fontSize: 11, color: 'var(--text-muted)' }}>{p.version || '—'}</td>
+                  <td style={{ fontSize: 11, color: 'var(--text-muted)' }}>{p.href}</td>
+                  <td><span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 4, color: p.core ? '#3b82f6' : p.enabled ? '#34bd59' : '#EF5856', background: p.core ? 'rgba(59,130,246,0.12)' : p.enabled ? 'rgba(52,189,89,0.12)' : 'rgba(239,88,86,0.12)' }}>{p.core ? 'Core' : p.enabled ? 'Active' : 'Disabled'}</span></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div style={{ marginTop: 12, textAlign: 'right' }}>
+          <Link href="/admin?tab=plugins" className="btn btn-secondary btn-sm">Manage Plugins →</Link>
+        </div>
       </div>
     );
   }
@@ -549,7 +549,7 @@ export default async function DashboardSection({ view, sp, user }) {
           {rooms.length === 0 ? (
             <p style={{ color: 'var(--text-muted)', fontSize: 12, textAlign: 'center', padding: 20 }}>No rooms occupied right now.</p>
           ) : (
-            <div className="adm-table-wrap"><table className="table-panel">
+            <table className="table-panel">
               <thead><tr><th>Room Name</th><th>Owner</th><th>Players</th><th>Score</th><th>State</th></tr></thead>
               <tbody>
                 {rooms.map(r => (
@@ -562,7 +562,7 @@ export default async function DashboardSection({ view, sp, user }) {
                   </tr>
                 ))}
               </tbody>
-            </table></div>
+            </table>
           )}
         </div>
       </div>
@@ -581,7 +581,7 @@ export default async function DashboardSection({ view, sp, user }) {
           {tickets.length === 0 ? (
             <p style={{ color: 'var(--text-muted)', fontSize: 12, textAlign: 'center', padding: 20 }}>No open tickets right now.</p>
           ) : (
-            <div className="adm-table-wrap"><table className="table-panel">
+            <table className="table-panel">
               <thead><tr><th>#</th><th>User</th><th>Subject</th><th>Category</th><th>Opened</th><th></th></tr></thead>
               <tbody>
                 {tickets.map(t => (
@@ -595,7 +595,7 @@ export default async function DashboardSection({ view, sp, user }) {
                   </tr>
                 ))}
               </tbody>
-            </table></div>
+            </table>
           )}
         </div>
       </div>
@@ -613,13 +613,13 @@ export default async function DashboardSection({ view, sp, user }) {
     { label: 'Diamonds Generated',    val: diamondsToday != null ? parseInt(diamondsToday).toLocaleString() : '—', color: diamondsToday > 0 ? '#f5c842' : 'var(--text-muted)', sub: diamondsToday != null ? 'diamonds given today' : 'run ocms_missing_tables.sql', raw: true, view: 'credits-today' },
     { label: 'Auction House',         val: `${parseInt(auctionActive||0)} active`, color: '#a0b4ff', sub: `${parseInt(auctionBids24h||0).toLocaleString()} bids placed (24h)`, raw: true, view: 'auction-house' },
     { label: 'Forum Posts (24h)',     val: forumPosts24h != null ? formatNumber(forumPosts24h) : '—', color: forumPosts24h > 0 ? '#34bd59' : 'var(--text-muted)', sub: forumPosts24h != null ? 'replies posted today' : 'forum tables not found', view: 'forum-volume' },
-    { label: 'Active Plugins',        val: pluginsActive != null ? formatNumber(pluginsActive) : '—', color: pluginsActive > 0 ? '#3b82f6' : 'var(--text-muted)', sub: pluginsActive != null ? 'plugins running' : 'cms_plugins not found', view: 'plugin-volume' },
+    { label: 'Active Plugins',        val: pluginsActive != null ? formatNumber(pluginsActive) : '—', color: pluginsActive > 0 ? '#3b82f6' : 'var(--text-muted)', sub: `${formatNumber(pluginsActive)} of ${getAllPlugins().length} active`, view: 'plugin-volume' },
   ];
 
   return (
     <div>
       {/* Stat widgets */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 12, marginBottom: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 16 }}>
         {widgets.map((w, i) => (
           <Link key={i} href={`/admin?tab=dashboard&view=${w.view}`} className="panel no-hover" style={{ padding: '16px 18px', textDecoration: 'none', display: 'block', transition: 'background .12s' }}>
             <div style={{ fontSize: 22, fontWeight: 800, color: w.color, marginBottom: 2 }}>
@@ -633,7 +633,7 @@ export default async function DashboardSection({ view, sp, user }) {
       </div>
 
       {/* Quick access */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 12, marginBottom: 12 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
         <div className="panel no-hover" style={{ padding: '14px 18px' }}>
           <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 10 }}>Quick Links</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>

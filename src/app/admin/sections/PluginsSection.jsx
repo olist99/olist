@@ -1,3 +1,4 @@
+import { togglePluginAction } from './actions/plugins';
 import Link from 'next/link';
 import { query } from '@/lib/db';
 import { getAllPlugins } from '@/lib/plugins';
@@ -11,26 +12,12 @@ export default async function PluginsSection({ view, sp, user }) {
 
   const pluginRows = await query("SELECT `key`, `value` FROM cms_settings WHERE `key` LIKE 'plugin_%'").catch(() => []);
   const pluginStateMap = {};
-  for (const row of pluginRows) pluginStateMap[row.key.replace('plugin_', '')] = row.value === '1';
+  for (const row of pluginRows) pluginStateMap[row.key.replace('plugin_', '')] = row.value == 1;
   const plugins = getAllPlugins().map(p => ({
     ...p,
     enabled: p.slug in pluginStateMap ? pluginStateMap[p.slug] : p.enabled,
   }));
 
-  async function togglePluginAction(formData) {
-    'use server';
-    const { getCurrentUser } = await import('@/lib/auth');
-    const { query: db } = await import('@/lib/db');
-    const { redirect } = await import('next/navigation');
-    const u = await getCurrentUser();
-    if (!u || u.rank < 6) redirect('/admin');
-    const slug    = formData.get('slug')?.replace(/[^a-z0-9_-]/g, '');
-    const enabled = formData.get('enabled') === '1' ? '1' : '0';
-    if (!slug) redirect('/admin?tab=plugins&error=Invalid+plugin');
-    await db('INSERT INTO cms_settings (`key`, `value`) VALUES (?, ?) ON DUPLICATE KEY UPDATE `value` = ?',
-      [`plugin_${slug}`, enabled, enabled]);
-    redirect(`/admin?tab=plugins&success=Plugin+${enabled === '1' ? 'enabled' : 'disabled'}`);
-  }
 
   return (
     <div>
@@ -41,7 +28,7 @@ export default async function PluginsSection({ view, sp, user }) {
         </p>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 15, marginBottom: 20 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 15, marginBottom: 20 }}>
         {plugins.map(p => (
           <div key={p.slug} className="panel no-hover" style={{ padding: 20 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>

@@ -1,3 +1,5 @@
+import { createNewsAction, editNewsAction, deleteNewsAction, deleteThreadAction, deletePostAction, togglePinAction, toggleLockAction, resolveReportAction, deleteEntryAction, createContestAction, closeContestAction } from './actions/community';
+import { createPollAction, deletePollAction, togglePollAction } from './actions/settings';
 import Link from 'next/link';
 import { query, queryOne } from '@/lib/db';
 
@@ -7,25 +9,6 @@ export default async function CommunitySection({ view, sp, user }) {
 
   // ── Create News ───────────────────────────────────────────────────────────
   if (view === 'news-create') {
-    async function createNewsAction(formData) {
-      'use server';
-      const { getCurrentUser } = await import('@/lib/auth');
-      const { query: db } = await import('@/lib/db');
-      const { redirect } = await import('next/navigation');
-      const u = await getCurrentUser();
-      if (!u || u.rank < 4) redirect('/');
-      const title     = formData.get('title')?.trim();
-      const content   = formData.get('content')?.trim();
-      const shortDesc = formData.get('short_desc')?.trim();
-      const tag       = formData.get('tag')?.trim() || 'NEWS';
-      const image     = formData.get('image')?.trim();
-      const pinned    = formData.get('pinned') === 'on' ? 1 : 0;
-      const slug = title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
-      if (!title || !content) redirect('/admin?tab=community&view=news-create&error=Title+and+content+required');
-      await db('INSERT INTO cms_news (title,slug,content,short_desc,image,tag,author_id,pinned) VALUES (?,?,?,?,?,?,?,?)',
-        [title,slug,content,shortDesc||null,image||null,tag,u.id,pinned]);
-      redirect('/admin?tab=community&success=Article+created');
-    }
     return <NewsForm action={createNewsAction} article={null} />;
   }
 
@@ -38,26 +21,6 @@ export default async function CommunitySection({ view, sp, user }) {
         <Link href="/admin?tab=community" className="btn btn-secondary btn-sm" style={{ marginTop: 12 }}>Back</Link>
       </div>
     );
-    async function editNewsAction(formData) {
-      'use server';
-      const { getCurrentUser } = await import('@/lib/auth');
-      const { query: db } = await import('@/lib/db');
-      const { redirect } = await import('next/navigation');
-      const u = await getCurrentUser();
-      if (!u || u.rank < 4) redirect('/');
-      const id      = formData.get('id');
-      const title   = formData.get('title')?.trim();
-      const content = formData.get('content')?.trim();
-      const shortDesc = formData.get('short_desc')?.trim();
-      const tag     = formData.get('tag')?.trim() || 'NEWS';
-      const image   = formData.get('image')?.trim();
-      const pinned  = formData.get('pinned') === 'on' ? 1 : 0;
-      const slug = title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
-      if (!title || !content) redirect(`/admin?tab=community&view=news-edit&id=${id}&error=Title+and+content+required`);
-      await db('UPDATE cms_news SET title=?,slug=?,content=?,short_desc=?,image=?,tag=?,pinned=? WHERE id=?',
-        [title,slug,content,shortDesc||null,image||null,tag,pinned,id]);
-      redirect('/admin?tab=community&success=Article+updated');
-    }
     return <NewsForm action={editNewsAction} article={article} />;
   }
 
@@ -77,7 +40,7 @@ export default async function CommunitySection({ view, sp, user }) {
           {referrals.length === 0 ? (
             <p style={{ color: 'var(--text-muted)', fontSize: 12, textAlign: 'center', padding: 20 }}>No referrals yet.</p>
           ) : (
-            <div className="adm-table-wrap"><table className="table-panel">
+            <table className="table-panel">
               <thead><tr><th>Referrer</th><th>New User</th><th>Date</th></tr></thead>
               <tbody>
                 {referrals.map(r => (
@@ -88,7 +51,7 @@ export default async function CommunitySection({ view, sp, user }) {
                   </tr>
                 ))}
               </tbody>
-            </table></div>
+            </table>
           )}
         </div>
       </div>
@@ -113,58 +76,9 @@ export default async function CommunitySection({ view, sp, user }) {
              ORDER BY r.created_at DESC LIMIT 30`).catch(() => null),
     ]);
 
-    async function deleteThreadAction(formData) {
-      'use server';
-      const { getCurrentUser } = await import('@/lib/auth');
-      const { query: db } = await import('@/lib/db');
-      const { redirect } = await import('next/navigation');
-      const u = await getCurrentUser();
-      if (!u || u.rank < 4) redirect('/admin');
-      const id = parseInt(formData.get('thread_id'));
-      if (id) {
-        await db('DELETE FROM cms_forum_replies WHERE thread_id = ?', [id]);
-        await db('DELETE FROM cms_forum_threads WHERE id = ?', [id]);
-      }
-      redirect('/admin?tab=community&view=forum&success=Thread+deleted');
-    }
 
-    async function deletePostAction(formData) {
-      'use server';
-      const { getCurrentUser } = await import('@/lib/auth');
-      const { query: db } = await import('@/lib/db');
-      const { redirect } = await import('next/navigation');
-      const u = await getCurrentUser();
-      if (!u || u.rank < 4) redirect('/admin');
-      const id = parseInt(formData.get('post_id'));
-      if (id) await db('DELETE FROM cms_forum_replies WHERE id = ?', [id]);
-      redirect('/admin?tab=community&view=forum&success=Post+deleted');
-    }
 
-    async function togglePinAction(formData) {
-      'use server';
-      const { getCurrentUser } = await import('@/lib/auth');
-      const { query: db } = await import('@/lib/db');
-      const { redirect } = await import('next/navigation');
-      const u = await getCurrentUser();
-      if (!u || u.rank < 4) redirect('/admin');
-      const id = parseInt(formData.get('thread_id'));
-      const pinned = formData.get('pinned') === '1';
-      if (id) await db('UPDATE cms_forum_threads SET pinned = ? WHERE id = ?', [pinned ? 0 : 1, id]);
-      redirect('/admin?tab=community&view=forum&success=Thread+updated');
-    }
 
-    async function toggleLockAction(formData) {
-      'use server';
-      const { getCurrentUser } = await import('@/lib/auth');
-      const { query: db } = await import('@/lib/db');
-      const { redirect } = await import('next/navigation');
-      const u = await getCurrentUser();
-      if (!u || u.rank < 4) redirect('/admin');
-      const id = parseInt(formData.get('thread_id'));
-      const locked = formData.get('locked') === '1';
-      if (id) await db('UPDATE cms_forum_threads SET locked = ? WHERE id = ?', [locked ? 0 : 1, id]);
-      redirect('/admin?tab=community&view=forum&success=Thread+updated');
-    }
 
     if (threads === null) {
       return (
@@ -189,7 +103,7 @@ export default async function CommunitySection({ view, sp, user }) {
             <Link href="/forum" className="btn btn-secondary btn-sm" style={{ fontSize: 10 }}>View Forum ↗</Link>
           </div>
           {threads.length === 0 ? <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>No threads yet.</p> : (
-            <div className="adm-table-wrap"><table className="table-panel">
+            <table className="table-panel">
               <thead><tr><th>Title</th><th>Author</th><th>Category</th><th>Replies</th><th>Status</th><th></th></tr></thead>
               <tbody>
                 {threads.map(t => (
@@ -223,14 +137,14 @@ export default async function CommunitySection({ view, sp, user }) {
                   </tr>
                 ))}
               </tbody>
-            </table></div>
+            </table>
           )}
         </div>
 
         {posts !== null && posts.length > 0 && (
           <div className="panel no-hover" style={{ padding: 20 }}>
             <h4 style={{ fontSize: 13, fontWeight: 700, marginBottom: 14 }}>Recent Posts ({posts.length})</h4>
-            <div className="adm-table-wrap"><table className="table-panel">
+            <table className="table-panel">
               <thead><tr><th>Author</th><th>Thread</th><th>Content</th><th>Date</th><th></th></tr></thead>
               <tbody>
                 {posts.map(p => (
@@ -248,7 +162,7 @@ export default async function CommunitySection({ view, sp, user }) {
                   </tr>
                 ))}
               </tbody>
-            </table></div>
+            </table>
           </div>
         )}
       </div>
@@ -266,18 +180,6 @@ export default async function CommunitySection({ view, sp, user }) {
       ORDER BY r.created_at DESC LIMIT 100
     `).catch(() => null);
 
-    async function resolveReportAction(formData) {
-      'use server';
-      const { getCurrentUser } = await import('@/lib/auth');
-      const { query: db } = await import('@/lib/db');
-      const { redirect } = await import('next/navigation');
-      const u = await getCurrentUser();
-      if (!u || u.rank < 4) redirect('/admin');
-      const id = parseInt(formData.get('report_id'));
-      const action = formData.get('action');
-      if (id) await db("UPDATE cms_content_reports SET status = ?, resolved_by = ?, resolved_at = NOW() WHERE id = ?", [action === 'dismiss' ? 'dismissed' : 'resolved', u.id, id]);
-      redirect('/admin?tab=community&view=report-posts&success=Report+updated');
-    }
 
     return (
       <div>
@@ -293,7 +195,7 @@ export default async function CommunitySection({ view, sp, user }) {
           </div>
         ) : (
           <div className="panel no-hover" style={{ padding: 20 }}>
-            <div className="adm-table-wrap"><table className="table-panel">
+            <table className="table-panel">
               <thead><tr><th>Reporter</th><th>Type</th><th>Target</th><th>Reason</th><th>Date</th><th></th></tr></thead>
               <tbody>
                 {reports.map(r => (
@@ -320,7 +222,7 @@ export default async function CommunitySection({ view, sp, user }) {
                   </tr>
                 ))}
               </tbody>
-            </table></div>
+            </table>
           </div>
         )}
       </div>
@@ -337,17 +239,6 @@ export default async function CommunitySection({ view, sp, user }) {
       ORDER BY g.created_at DESC LIMIT 100
     `).catch(() => null);
 
-    async function deleteEntryAction(formData) {
-      'use server';
-      const { getCurrentUser } = await import('@/lib/auth');
-      const { query: db } = await import('@/lib/db');
-      const { redirect } = await import('next/navigation');
-      const u = await getCurrentUser();
-      if (!u || u.rank < 4) redirect('/admin');
-      const id = parseInt(formData.get('entry_id'));
-      if (id) await db('DELETE FROM cms_guestbook_entries WHERE id = ?', [id]);
-      redirect('/admin?tab=community&view=guestbooks&success=Entry+deleted');
-    }
 
     return (
       <div>
@@ -363,7 +254,7 @@ export default async function CommunitySection({ view, sp, user }) {
           </div>
         ) : (
           <div className="panel no-hover" style={{ padding: 20 }}>
-            <div className="adm-table-wrap"><table className="table-panel">
+            <table className="table-panel">
               <thead><tr><th>Written By</th><th>On Profile</th><th>Message</th><th>Date</th><th></th></tr></thead>
               <tbody>
                 {entries.map(e => (
@@ -381,7 +272,7 @@ export default async function CommunitySection({ view, sp, user }) {
                   </tr>
                 ))}
               </tbody>
-            </table></div>
+            </table>
           </div>
         )}
       </div>
@@ -398,35 +289,7 @@ export default async function CommunitySection({ view, sp, user }) {
       ORDER BY c.created_at DESC LIMIT 50
     `).catch(() => null);
 
-    async function createContestAction(formData) {
-      'use server';
-      const { getCurrentUser } = await import('@/lib/auth');
-      const { query: db } = await import('@/lib/db');
-      const { sanitizeText } = await import('@/lib/security');
-      const { redirect } = await import('next/navigation');
-      const u = await getCurrentUser();
-      if (!u || u.rank < 4) redirect('/admin');
-      const title = sanitizeText(formData.get('title') || '', 200);
-      const description = sanitizeText(formData.get('description') || '', 1000);
-      const prize = sanitizeText(formData.get('prize') || '', 200);
-      const endDate = formData.get('end_date') || null;
-      if (!title) redirect('/admin?tab=community&view=contests&error=Title+required');
-      await db('INSERT INTO cms_contests (title, description, prize, end_date, created_by, status) VALUES (?,?,?,?,?,?)',
-        [title, description, prize, endDate, u.id, 'active']);
-      redirect('/admin?tab=community&view=contests&success=Contest+created');
-    }
 
-    async function closeContestAction(formData) {
-      'use server';
-      const { getCurrentUser } = await import('@/lib/auth');
-      const { query: db } = await import('@/lib/db');
-      const { redirect } = await import('next/navigation');
-      const u = await getCurrentUser();
-      if (!u || u.rank < 4) redirect('/admin');
-      const id = parseInt(formData.get('contest_id'));
-      if (id) await db("UPDATE cms_contests SET status = 'closed' WHERE id = ?", [id]);
-      redirect('/admin?tab=community&view=contests&success=Contest+closed');
-    }
 
     return (
       <div>
@@ -438,7 +301,7 @@ export default async function CommunitySection({ view, sp, user }) {
             <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Run <code>sql/ocms_missing_tables.sql</code> to create the table.</p>
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'min(280px, 100%) 1fr', flexWrap: 'wrap', gap: 16 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '280px 1fr', gap: 16 }}>
             <div className="panel no-hover" style={{ padding: 20 }}>
               <h4 style={{ fontSize: 13, fontWeight: 700, marginBottom: 14 }}>Create Contest</h4>
               <form action={createContestAction}>
@@ -467,7 +330,7 @@ export default async function CommunitySection({ view, sp, user }) {
               {contests.length === 0 ? (
                 <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>No contests yet. Create one!</p>
               ) : (
-                <div className="adm-table-wrap"><table className="table-panel">
+                <table className="table-panel">
                   <thead><tr><th>Title</th><th>Prize</th><th>Entries</th><th>Ends</th><th>Status</th><th></th></tr></thead>
                   <tbody>
                     {contests.map(c => (
@@ -488,11 +351,118 @@ export default async function CommunitySection({ view, sp, user }) {
                       </tr>
                     ))}
                   </tbody>
-                </table></div>
+                </table>
               )}
             </div>
           </div>
         )}
+      </div>
+    );
+  }
+
+  // ── Polls ─────────────────────────────────────────────────────────────────
+  if (view === 'polls') {
+    const polls = await query(`
+      SELECT p.*, u.username AS created_by_name,
+        COUNT(DISTINCT v.id) AS total_votes,
+        COUNT(DISTINCT o.id) AS option_count
+      FROM cms_polls p
+      LEFT JOIN users u ON u.id = p.created_by
+      LEFT JOIN cms_poll_votes v ON v.poll_id = p.id
+      LEFT JOIN cms_poll_options o ON o.poll_id = p.id
+      GROUP BY p.id ORDER BY p.created_at DESC LIMIT 50
+    `).catch(() => null);
+
+    return (
+      <div>
+        <SectionHeader title="Polls & Surveys" sub="Create community polls and view results" back="community" />
+
+        {polls === null && (
+          <div className="panel no-hover" style={{ padding:16, marginBottom:16 }}>
+            <p style={{ fontSize:12, color:'#f5a623', fontWeight:700 }}>Run this SQL to enable polls:</p>
+            <pre style={{ fontSize:10, color:'var(--text-muted)', marginTop:8, whiteSpace:'pre-wrap' }}>{`CREATE TABLE cms_polls (id INT AUTO_INCREMENT PRIMARY KEY, question VARCHAR(300) NOT NULL, description TEXT, created_by INT, active TINYINT DEFAULT 1, is_open TINYINT DEFAULT 1, expires_at DATETIME, created_at DATETIME DEFAULT NOW());
+CREATE TABLE cms_poll_options (id INT AUTO_INCREMENT PRIMARY KEY, poll_id INT NOT NULL, option_text VARCHAR(200) NOT NULL, sort_order INT DEFAULT 0);
+CREATE TABLE cms_poll_votes (id INT AUTO_INCREMENT PRIMARY KEY, poll_id INT NOT NULL, option_id INT NOT NULL, user_id INT NOT NULL, created_at DATETIME DEFAULT NOW(), UNIQUE KEY uk_vote (poll_id, user_id));`}</pre>
+          </div>
+        )}
+
+        <div style={{ display:'grid', gridTemplateColumns:'300px 1fr', gap:16 }}>
+          {/* Create form */}
+          <div className="panel no-hover" style={{ padding:20 }}>
+            <h4 style={{ fontSize:13, fontWeight:700, marginBottom:14 }}>Create Poll</h4>
+            <form action={createPollAction}>
+              <div style={{ marginBottom:12 }}>
+                <label style={labelStyle}>Question *</label>
+                <input type="text" name="question" placeholder="What do you think about...?" required maxLength={300} />
+              </div>
+              <div style={{ marginBottom:12 }}>
+                <label style={labelStyle}>Description (optional)</label>
+                <textarea name="description" rows={2} placeholder="More context..." maxLength={1000} />
+              </div>
+              <div style={{ marginBottom:12 }}>
+                <label style={labelStyle}>Options (min 2)</label>
+                {[0,1,2,3].map(i => (
+                  <input key={i} type="text" name={`option_${i}`} placeholder={`Option ${i+1}${i < 2 ? ' *' : ''}`}
+                    required={i < 2} maxLength={200} style={{ marginBottom:6 }} />
+                ))}
+              </div>
+              <div style={{ marginBottom:16 }}>
+                <label style={labelStyle}>Closes At (optional)</label>
+                <input type="datetime-local" name="expires_at" />
+              </div>
+              <button type="submit" className="btn btn-primary btn-sm" style={{ width:'100%' }}>Create Poll</button>
+            </form>
+          </div>
+
+          {/* Poll list */}
+          <div className="panel no-hover" style={{ padding:20 }}>
+            <h4 style={{ fontSize:13, fontWeight:700, marginBottom:14 }}>Polls ({polls?.length ?? 0})</h4>
+            {!polls || polls.length === 0 ? (
+              <p style={{ fontSize:12, color:'var(--text-muted)', textAlign:'center', padding:20 }}>No polls yet.</p>
+            ) : (
+              <table className="table-panel">
+                <thead><tr><th>Question</th><th>Options</th><th>Votes</th><th>Status</th><th>Open</th><th></th></tr></thead>
+                <tbody>
+                  {polls.map(p => (
+                    <tr key={p.id}>
+                      <td style={{ fontWeight:600, maxWidth:220, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{p.question}</td>
+                      <td style={{ fontSize:11, color:'var(--text-muted)' }}>{p.option_count}</td>
+                      <td style={{ fontWeight:700 }}>{p.total_votes}</td>
+                      <td>
+                        <form action={togglePollAction} style={{ display:'inline' }}>
+                          <input type="hidden" name="poll_id" value={p.id} />
+                          <input type="hidden" name="field" value="active" />
+                          <input type="hidden" name="current" value={p.active ? '1':'0'} />
+                          <button type="submit" className="btn btn-sm" style={{ fontSize:9, padding:'2px 8px',
+                            color: p.active ? 'var(--green)' : '#EF5856',
+                            background: p.active ? 'rgba(52,189,89,0.1)' : 'rgba(239,88,86,0.1)'
+                          }}>{p.active ? 'Active' : 'Hidden'}</button>
+                        </form>
+                      </td>
+                      <td>
+                        <form action={togglePollAction} style={{ display:'inline' }}>
+                          <input type="hidden" name="poll_id" value={p.id} />
+                          <input type="hidden" name="field" value="is_open" />
+                          <input type="hidden" name="current" value={p.is_open ? '1':'0'} />
+                          <button type="submit" className="btn btn-sm" style={{ fontSize:9, padding:'2px 8px',
+                            color: p.is_open ? '#34bd59' : 'var(--text-muted)',
+                            background: p.is_open ? 'rgba(52,189,89,0.1)' : 'rgba(255,255,255,0.05)'
+                          }}>{p.is_open ? 'Open' : 'Closed'}</button>
+                        </form>
+                      </td>
+                      <td>
+                        <form action={deletePollAction}>
+                          <input type="hidden" name="poll_id" value={p.id} />
+                          <button type="submit" className="btn btn-sm btn-delete" style={{ fontSize:9 }}>Del</button>
+                        </form>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </div>
       </div>
     );
   }
@@ -502,21 +472,6 @@ export default async function CommunitySection({ view, sp, user }) {
     'SELECT n.*, u.username AS author_name FROM cms_news n JOIN users u ON u.id = n.author_id ORDER BY n.created_at DESC LIMIT 50'
   ).catch(() => []);
 
-  async function deleteNewsAction(formData) {
-    'use server';
-    const { getCurrentUser } = await import('@/lib/auth');
-    const { query: db } = await import('@/lib/db');
-    const { redirect } = await import('next/navigation');
-    const u = await getCurrentUser();
-    if (!u || u.rank < 4) redirect('/');
-    const id = parseInt(formData.get('news_id'));
-    if (id) {
-      await db('DELETE FROM cms_news_comments WHERE news_id = ?', [id]);
-      await db('DELETE FROM cms_news_reactions WHERE news_id = ?', [id]);
-      await db('DELETE FROM cms_news WHERE id = ?', [id]);
-    }
-    redirect('/admin?tab=community&success=Article+deleted');
-  }
 
   return (
     <div>
@@ -525,7 +480,7 @@ export default async function CommunitySection({ view, sp, user }) {
           <h3 style={{ fontSize: 16, fontWeight: 700 }}>News Articles ({news.length})</h3>
           <Link href="/admin?tab=community&view=news-create" className="btn btn-primary btn-sm">+ Create Article</Link>
         </div>
-        <div className="adm-table-wrap"><table className="table-panel">
+        <table className="table-panel">
           <thead><tr><th>ID</th><th>Title</th><th>Tag</th><th>Author</th><th>Pinned</th><th>Views</th><th>Date</th><th></th></tr></thead>
           <tbody>
             {news.map(n => (
@@ -554,7 +509,7 @@ export default async function CommunitySection({ view, sp, user }) {
             ))}
             {news.length === 0 && <tr><td colSpan={8} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 30 }}>No news articles yet.</td></tr>}
           </tbody>
-        </table></div>
+        </table>
       </div>
     </div>
   );
@@ -569,7 +524,7 @@ function NewsForm({ action, article }) {
       </div>
       <form action={action}>
         {article && <input type="hidden" name="id" value={article.id} />}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16, marginBottom: 16 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
           <div><label style={labelStyle}>Title *</label><input type="text" name="title" defaultValue={article?.title||''} required /></div>
           <div><label style={labelStyle}>Tag</label>
             <select name="tag" defaultValue={article?.tag||'NEWS'}>

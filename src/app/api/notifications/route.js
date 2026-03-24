@@ -1,4 +1,3 @@
-export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import { getSessionUserId } from '@/lib/auth';
 import { query } from '@/lib/db';
@@ -40,6 +39,11 @@ export async function POST(request) {
 
   if (body.action === 'mark_read' && body.id) {
     await query('UPDATE cms_notifications SET is_read = 1 WHERE id = ? AND user_id = ?', [body.id, userId]).catch(() => {});
+    return NextResponse.json({ ok: true });
+  }
+
+  if (body.action === 'clear_all') {
+    await query('DELETE FROM cms_notifications WHERE user_id = ?', [userId]).catch(() => {});
     return NextResponse.json({ ok: true });
   }
 

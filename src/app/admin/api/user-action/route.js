@@ -10,7 +10,7 @@ export async function POST(request) {
   }
 
   // Rate limit admin actions: 30/min
-  const rl = checkRateLimit(`admin-action:${user.id}`, 30, 60000);
+  const rl = await checkRateLimit(`admin-action:${user.id}`, 30, 60000);
   if (!rl.ok) return NextResponse.json({ error: 'Rate limited' }, { status: 429 });
 
   let body;
