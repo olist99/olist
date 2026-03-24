@@ -1,8 +1,6 @@
 import { getCurrentUser } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 
-export const dynamic = 'force-dynamic';
-
 export const metadata = { title: 'FAQ' };
 
 export default async function FAQPage() {

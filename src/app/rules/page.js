@@ -2,15 +2,12 @@ import { getCurrentUser } from '@/lib/auth';
 import { isPluginEnabled } from '@/lib/plugins';
 import { redirect } from 'next/navigation';
 
-export const dynamic = 'force-dynamic';
-
 export const metadata = { title: 'Rules' };
 
 export default async function RulesPage() {
   const user = await getCurrentUser();
   if (!user) redirect('/login');
   if (!await isPluginEnabled('help')) redirect('/');
-
 
   const siteName = process.env.NEXT_PUBLIC_SITE_NAME || 'OCMS';
 

@@ -3,7 +3,6 @@ import Link from 'next/link';
 import { getCurrentUser } from '@/lib/auth';
 import { query, queryOne } from '@/lib/db';
 
-export const dynamic = 'force-dynamic';
 
 const FURNI_RENDER = process.env.NEXT_PUBLIC_FURNI_RENDER_URL || '/swf/dcr/hof_furni/';
 const FURNI_ICON = process.env.NEXT_PUBLIC_FURNI_URL || '/swf/dcr/hof_furni/icons/';
@@ -21,15 +20,25 @@ function parseUtc(dateStr) {
   return new Date(s.endsWith('Z') ? s : s + 'Z');
 }
 
-function timeAgo(date) {
-  const diff = Date.now() - parseUtc(date).getTime();
-  const s = Math.floor(diff / 1000);
-  if (s < 60) return `${s}s ago`;
-  const m = Math.floor(s / 60);
-  if (m < 60) return `${m}m ago`;
-  const h = Math.floor(m / 60);
-  if (h < 24) return `${h}h ago`;
-  return `${Math.floor(h / 24)}d ago`;
+function timeAgo(dateStr) {
+  if (!dateStr) return '';
+  let then;
+  if (dateStr instanceof Date) {
+    then = dateStr;
+  } else if (typeof dateStr === 'number') {
+    then = new Date(dateStr * 1000);
+  } else {
+    const s = String(dateStr).trim().replace(' UTC', '');
+    // Handle "YYYY-MM-DD HH:MM:SS" from mysql2 dateStrings
+    const normalized = s.replace(' ', 'T');
+    then = new Date(normalized.endsWith('Z') ? normalized : normalized + 'Z');
+  }
+  if (!then || isNaN(then.getTime())) return '';
+  const diff = Math.floor((Date.now() - then.getTime()) / 1000);
+  if (diff < 60) return 'just now';
+  if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+  if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+  return Math.floor(diff / 86400) + 'd ago';
 }
 
 function formatDt(date) {

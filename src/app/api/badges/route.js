@@ -1,4 +1,3 @@
-export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import { getSessionUserId } from '@/lib/auth';
 import { query, queryOne } from '@/lib/db';
@@ -9,7 +8,7 @@ export async function POST(request) {
   const userId = await getSessionUserId();
   if (!userId) return NextResponse.json({ error: 'Not logged in' }, { status: 401 });
 
-  const rl = checkRateLimit(`badge:${userId}`, 5, 300000);
+  const rl = await checkRateLimit(`badge:${userId}`, 5, 300000);
   if (!rl.ok) return NextResponse.json({ error: 'Too many badges. Wait a few minutes.' }, { status: 429 });
 
   let body;

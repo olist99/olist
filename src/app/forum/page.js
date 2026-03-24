@@ -4,15 +4,12 @@ import Link from 'next/link';
 import { getCurrentUser } from '@/lib/auth';
 import { query } from '@/lib/db';
 
-export const dynamic = 'force-dynamic';
-
 export const metadata = { title: 'Forum' };
 
 export default async function ForumPage() {
   const user = await getCurrentUser();
   if (!user) redirect('/login');
   if (!await isPluginEnabled('forum')) redirect('/');
-
 
   const categories = await query('SELECT * FROM cms_forum_categories ORDER BY sort_order ASC').catch(() => []);
 

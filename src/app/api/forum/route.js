@@ -1,4 +1,3 @@
-export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import { getSessionUserId, getCurrentUser } from '@/lib/auth';
 import { query, queryOne } from '@/lib/db';
@@ -20,7 +19,7 @@ export async function POST(request) {
 
     // ── Create thread ──
     if (action === 'create_thread') {
-      const rl = checkRateLimit(`forum-thread:${userId}`, 3, 60000);
+      const rl = await checkRateLimit(`forum-thread:${userId}`, 3, 60000);
       if (!rl.ok) return NextResponse.json({ error: 'Slow down! Wait a moment before posting again.' }, { status: 429 });
 
       const categoryId = safeInt(body.category_id, 1);
@@ -45,7 +44,7 @@ export async function POST(request) {
 
     // ── Create reply ──
     if (action === 'create_reply') {
-      const rl = checkRateLimit(`forum-reply:${userId}`, 5, 60000);
+      const rl = await checkRateLimit(`forum-reply:${userId}`, 5, 60000);
       if (!rl.ok) return NextResponse.json({ error: 'Slow down! Wait a moment before posting again.' }, { status: 429 });
 
       const threadId = safeInt(body.thread_id, 1);

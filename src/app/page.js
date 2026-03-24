@@ -8,8 +8,6 @@ import NewsCarousel from '@/components/NewsCarousel';
 import ReferralPanel from '@/components/ReferralPanel';
 import DailyReward from '@/components/DailyReward';
 
-export const dynamic = 'force-dynamic';
-
 export const metadata = { title: 'Home' };
 
 export default async function HomePage() {

@@ -1,4 +1,3 @@
-export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import { getSessionUserId, getCurrentUser } from '@/lib/auth';
 import { query, queryOne } from '@/lib/db';
@@ -63,7 +62,7 @@ export async function POST(request) {
 
   // ── Open case ──
   if (action === 'open') {
-    const rl = checkRateLimit(`case-open:${userId}`, 20, 60000);
+    const rl = await checkRateLimit(`case-open:${userId}`, 20, 60000);
     if (!rl.ok) return NextResponse.json({ error: 'Too fast!' }, { status: 429 });
 
     const caseId = safeInt(body.caseId, 1);

@@ -1,11 +1,11 @@
 import { redirect } from 'next/navigation';
+import { updateProfile, updateLook, changePassword } from './actions';
 import Link from 'next/link';
 import { getCurrentUser, hashPassword, verifyPassword } from '@/lib/auth';
 import { query } from '@/lib/db';
 import Avatar from '@/components/Avatar';
 import { headers } from 'next/headers';
-
-export const dynamic = 'force-dynamic';
+import TwoFactorSettings from './TwoFactorSettings';
 
 export const metadata = { title: 'Settings' };
 
@@ -18,61 +18,8 @@ export default async function SettingsPage({ searchParams }) {
   const msg = sp?.msg;
   const error = sp?.error;
 
-  async function updateProfile(formData) {
-    'use server';
-    const { getCurrentUser: getUser } = await import('@/lib/auth');
-    const { query: dbQuery } = await import('@/lib/db');
-    const { sanitizeText } = await import('@/lib/security');
-    const u = await getUser();
-    if (!u) redirect('/login');
 
-    const motto = sanitizeText(formData.get('motto') || '', 127);
-    const rawEmail = formData.get('email')?.trim() || '';
 
-    if (!rawEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(rawEmail)) redirect('/settings?tab=general&error=Invalid+email');
-    const email = rawEmail.slice(0, 254);
-
-    await dbQuery('UPDATE users SET motto = ?, mail = ? WHERE id = ?', [motto, email, u.id]);
-    redirect('/settings?tab=general&msg=Profile+updated!');
-  }
-
-  async function updateLook(formData) {
-    'use server';
-    const { getCurrentUser: getUser } = await import('@/lib/auth');
-    const { query: dbQuery } = await import('@/lib/db');
-    const u = await getUser();
-    if (!u) redirect('/login');
-
-    const look = formData.get('look')?.trim() || '';
-    if (!look || !/^[a-zA-Z0-9\-\.]+$/.test(look)) redirect('/settings?tab=avatar&error=Invalid+look+string');
-
-    await dbQuery('UPDATE users SET look = ? WHERE id = ?', [look, u.id]);
-    redirect('/settings?tab=avatar&msg=Look+updated!');
-  }
-
-  async function changePassword(formData) {
-    'use server';
-    const { getCurrentUser: getUser, verifyPassword: verify, hashPassword: hash } = await import('@/lib/auth');
-    const { query: dbQuery } = await import('@/lib/db');
-    const { queryOne } = await import('@/lib/db');
-    const u = await getUser();
-    if (!u) redirect('/login');
-
-    const current = formData.get('current_password');
-    const newPass = formData.get('new_password');
-    const confirm = formData.get('confirm_password');
-
-    const fullUser = await queryOne('SELECT password FROM users WHERE id = ?', [u.id]);
-    if (!fullUser || !(await verify(current, fullUser.password))) {
-      redirect('/settings?tab=security&error=Current+password+is+incorrect');
-    }
-    if (!newPass || newPass.length < 6) redirect('/settings?tab=security&error=Password+must+be+6%2B+characters');
-    if (newPass !== confirm) redirect('/settings?tab=security&error=Passwords+do+not+match');
-
-    const hashed = await hash(newPass);
-    await dbQuery('UPDATE users SET password = ? WHERE id = ?', [hashed, u.id]);
-    redirect('/settings?tab=security&msg=Password+changed!');
-  }
 
   // Fetch login history for the history tab
   let loginHistory = [];
@@ -88,6 +35,7 @@ export default async function SettingsPage({ searchParams }) {
     { key: 'avatar',   label: 'Avatar' },
     { key: 'security', label: 'Security' },
     { key: 'history',  label: 'Login History' },
+    { key: '2fa',      label: '2FA Security' },
   ];
 
   return (
@@ -193,6 +141,20 @@ export default async function SettingsPage({ searchParams }) {
           </>
         )}
 
+        {tab === '2fa' && (
+          <div className="card">
+            <div className="px-5 py-4 border-b border-border">
+              <h3 className="font-bold">Two-Factor Authentication</h3>
+              <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>
+                Protect your account with an authenticator app
+              </p>
+            </div>
+            <div className="p-5">
+              <TwoFactorSettings />
+            </div>
+          </div>
+        )}
+
         {tab === 'history' && (
           <div className="card">
             <div className="px-5 py-4 border-b border-border">
@@ -225,7 +187,7 @@ export default async function SettingsPage({ searchParams }) {
                             {isCurrentIp ? 'Current' : ''}
                           </div>
                           <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>
-                            {h.created_at ? new Date(h.created_at.toString().trim().replace(' UTC','').replace(' ','T') + (h.created_at.toString().endsWith('Z') ? '' : 'Z')).toLocaleString(undefined) : '—'}
+                            {h.created_at ? new Date(h.created_at).toLocaleString() : '—'}
                           </div>
                         </div>
                       </div>

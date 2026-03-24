@@ -2,8 +2,6 @@ import Link from 'next/link';
 import { query } from '@/lib/db';
 import Avatar from '@/components/Avatar';
 
-export const dynamic = 'force-dynamic';
-
 const HABBO_IMG = process.env.NEXT_PUBLIC_HABBO_IMG || 'https://www.habbo.com/habbo-imaging/avatarimage';
 
 function Podium({ top3, icon, format }) {

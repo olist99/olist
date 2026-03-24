@@ -3,8 +3,6 @@ import { getCurrentUser } from '@/lib/auth';
 import { queryOne } from '@/lib/db';
 import NewThreadForm from './NewThreadForm';
 
-export const dynamic = 'force-dynamic';
-
 export const metadata = { title: 'New Thread' };
 
 export default async function NewThreadPage({ params }) {

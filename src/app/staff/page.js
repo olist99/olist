@@ -1,79 +1,130 @@
-import Link from 'next/link';
+import { getCurrentUser } from '@/lib/auth';
 import { query } from '@/lib/db';
-import { RANK_COLORS, RANK_ICONS } from '@/lib/utils';
-import Avatar from '@/components/Avatar';
+import StaffScene from './StaffScene';
+import RankLegend from './RankLegend';
+import BackgroundSetter from './BackgroundSetter';
 
-export const dynamic = 'force-dynamic';
-
-export const metadata = { title: 'Staff' };
+export const metadata = { title: 'Staff Team' };
 
 export default async function StaffPage() {
-  // Arcturus: rank >= 3 = staff
+  const user = await getCurrentUser();
+
   const staff = await query(`
     SELECT u.id, u.username, u.look, u.motto, u.online, u.rank,
            p.rank_name
     FROM users u
-    LEFT JOIN permissions p ON p.id = u.rank
+    LEFT JOIN permissions p ON p.id = u.\`rank\`
     WHERE u.rank >= 3
     ORDER BY u.rank DESC, u.username ASC
   `);
 
-  // Group by rank
+  const posRows = await query(
+    'SELECT user_id, x_pct, y_pct, direction, head_direction, sitting FROM cms_staff_positions'
+  ).catch(() => []);
+
+  const savedPositions = {};
+  for (const p of posRows) {
+    savedPositions[p.user_id] = {
+      x: parseFloat(p.x_pct),
+      y: parseFloat(p.y_pct),
+      direction: p.direction ?? 2,
+      head_direction: p.head_direction ?? 2,
+      sitting: p.sitting ?? 0,
+    };
+  }
+
+  const canEdit = user?.rank >= 7;
+
+  const bgRow = await query(
+    "SELECT `value` FROM cms_settings WHERE `key` = 'staff_background'"
+  ).then(r => r[0]).catch(() => null);
+  const backgroundUrl = bgRow?.value || null;
+
+  const fgRow = await query(
+    "SELECT `value` FROM cms_settings WHERE `key` = 'staff_foreground'"
+  ).then(r => r[0]).catch(() => null);
+  const foregroundUrl = fgRow?.value || null;
+
+  // Build groups for legend
   const groups = {};
   staff.forEach(s => {
-    const rName = s.rank_name || `Rank ${s.rank}`;
-    if (!groups[s.rank]) groups[s.rank] = { name: rName, members: [] };
-    groups[s.rank].members.push(s);
+    const key = String(s.rank);
+    if (!groups[key]) groups[key] = { name: s.rank_name || `Rank ${s.rank}`, members: [] };
+    groups[key].members.push({ id: s.id, username: s.username, online: s.online ? 1 : 0 });
   });
-
-  // Sort by rank desc
   const sortedRanks = Object.keys(groups).sort((a, b) => b - a);
+
+  const onlineCount = staff.filter(s => s.online).length;
+  const offlineCount = staff.length - onlineCount;
+
+  // Rank breakdown for info box
+  const rankBreakdown = sortedRanks.map(r => ({
+    rank: Number(r),
+    name: groups[r].name,
+    count: groups[r].members.length,
+    online: groups[r].members.filter(m => m.online).length,
+  }));
+
+  const RANK_COLORS = {
+    1: '#8b949e', 2: '#f5a623', 3: '#5bc0de',
+    4: '#3b82f6', 5: '#8b5cf6', 6: '#ef4444', 7: '#4ade80',
+  };
 
   return (
     <div className="animate-fade-up">
-      <div className="mb-6 title-header">
+      <div className="title-header mb-5">
         <h2 className="text-xl font-bold">Staff Team</h2>
-        <p className="text-xs text-text-secondary mt-0.5">Meet the team that keeps the Hotel running!</p>
+        <p className="text-xs text-text-secondary mt-0.5">
+          Meet the team keeping the hotel running ·{' '}
+          <span style={{ color: '#4ade80', fontWeight: 700 }}>{onlineCount} online</span>
+          {' '}/ {staff.length} total
+        </p>
       </div>
 
-      {sortedRanks.length === 0 && (
+      {staff.length === 0 ? (
         <div className="card p-16 text-center text-text-muted">No staff members to display.</div>
-      )}
+      ) : (
+        <>
+          {/* Scene + info box side by side */}
+          <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr', gap: 16, marginBottom: 28, alignItems: 'stretch' }}>
 
-      {sortedRanks.map(rankId => {
-        const group = groups[rankId];
-        const color = RANK_COLORS[rankId] || '#8b949e';
-        const icon = RANK_ICONS[rankId] || '/images/rank-member.png';
+            {/* Info box */}
+            <div style={{
+              display: 'flex', flexDirection: 'column', gap: 12,
+            }}>
 
-        return (
-          <div key={rankId} className="mb-8">
-            <h3 className="title-header text-lg font-bold mb-4 pb-2 border-b-2 border-border flex items-center gap-2.5">
-              <img src={icon} alt="" style={{ width: 20, height: 20, imageRendering: 'pixelated' }} />
-              <span style={{ color }}>{group.name}</span>
-              <span className="text-xs font-normal text-text-muted ml-2">({group.members.length})</span>
-            </h3>
-            <div className="grid grid-cols-3 gap-4 max-md:grid-cols-2">
-              {group.members.map(member => (
-                <Link key={member.id} href={`/profile/${member.username}`}
-                  className="bg-bg-secondary border border-border rounded-lg p-5 text-center transition-all duration-300 hover:-translate-y-1 hover:border-accent no-underline"
-                  style={{ ':hover': { boxShadow: `0 4px 20px ${color}33` } }}>
-                  <div className="mx-auto mb-2.5">
-                    <Avatar look={member.look} size="l" className="mx-auto" />
-                  </div>
-                  <div className="text-[15px] font-bold text-text-primary">{member.username}</div>
-                  <div className="text-xs mt-1" style={{ color }}>{group.name}</div>
-                  <div className="text-[11px] text-text-muted mt-1.5 italic">&ldquo;{member.motto}&rdquo;</div>
-                  {member.online ? (
-                    <span className="inline-block mt-2 text-[11px] text-accent bg-accent/10 px-2.5 py-0.5 rounded-full"> Online</span>
-                  ) : (
-                    <span className="inline-block mt-2 text-[11px] text-text-muted bg-bg-primary px-2.5 py-0.5 rounded-full">⚫ Offline</span>
-                  )}
-                </Link>
-              ))}
+              {/* Rank breakdown */}
+              <div className="panel no-hover" style={{ padding: '18px 16px', flex: 1 }}>
+                <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 14 }}>
+                  Who are we?
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
+                      <p>Team Habbo is a group of passionate, hardworking individuals who care about bringing you the best possible experience yet. We're all about delivering real value, and each of us brings something unique to the table.
+                      </p><br></br><p>
+Whether it's improving features, solving problems, or just making things run smoother, we're constantly looking for ways to make your experience with us better. Above all, we're here to make sure you enjoy every moment with Habbo.</p>
+                </div>
+              </div>
             </div>
+
+            {/* Scene */}
+            <StaffScene
+              staff={staff.map(s => ({
+                id: s.id,
+                username: s.username,
+                look: s.look,
+                rank: s.rank,
+                rank_name: s.rank_name,
+                online: s.online ? 1 : 0,
+              }))}
+              initialPositions={savedPositions}
+              canEdit={canEdit}
+              backgroundUrl={backgroundUrl}
+              foregroundUrl={foregroundUrl}
+            />
           </div>
-        );
-      })}
+
+        </>
+      )}
     </div>
   );
 }

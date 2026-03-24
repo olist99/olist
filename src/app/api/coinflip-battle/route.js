@@ -1,4 +1,3 @@
-export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import { getSessionUserId } from '@/lib/auth';
 import { query, queryOne } from '@/lib/db';
@@ -41,7 +40,7 @@ export async function POST(request) {
 
   // Create battle
   if (action === 'create') {
-    const rl = checkRateLimit(`battle-create:${userId}`, 5, 60000);
+    const rl = await checkRateLimit(`battle-create:${userId}`, 5, 60000);
     if (!rl.ok) return NextResponse.json({ error: 'Too fast!' }, { status: 429 });
 
     const amount = safeInt(body.amount, 1, 10000000);
@@ -63,7 +62,7 @@ export async function POST(request) {
 
   // Accept battle
   if (action === 'accept') {
-    const rl = checkRateLimit(`battle-accept:${userId}`, 10, 60000);
+    const rl = await checkRateLimit(`battle-accept:${userId}`, 10, 60000);
     if (!rl.ok) return NextResponse.json({ error: 'Too fast!' }, { status: 429 });
 
     const battleId = safeInt(body.battleId, 1);

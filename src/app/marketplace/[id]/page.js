@@ -1,4 +1,5 @@
 import { notFound, redirect } from 'next/navigation';
+import { buyAction, sendOffer, acceptOffer } from './actions';
 import Link from 'next/link';
 import { getCurrentUser, getSessionUserId } from '@/lib/auth';
 import { query, queryOne } from '@/lib/db';
@@ -6,8 +7,6 @@ import { formatNumber, timeAgo, RANK_COLORS, CURRENCY_ICONS } from '@/lib/utils'
 
 const CIcon = ({ type, size = 14 }) => <img src={CURRENCY_ICONS[type] || '/images/coin.png'} alt="" style={{ width: size, height: size, imageRendering: 'pixelated', verticalAlign: 'middle' }} />;
 import PriceHistory from '@/components/PriceHistory';
-
-export const dynamic = 'force-dynamic';
 
 
 const CURRENCY_LABEL = { credits: 'Credits', pixels: 'Duckets', points: 'Diamonds' };
@@ -55,145 +54,10 @@ export default async function MarketplaceDetailPage({ params, searchParams }) {
   const HABBO_IMG = process.env.NEXT_PUBLIC_HABBO_IMG || 'https://www.habbo.com/habbo-imaging/avatarimage';
 
   // Buy action (with item transfer)
-  async function buyAction(formData) {
-    'use server';
-    const { getSessionUserId: getId } = await import('@/lib/auth');
-    const { query: db, queryOne: dbOne } = await import('@/lib/db');
-    const { safeInt, safeCurrencyColumn, checkRateLimit } = await import('@/lib/security');
-    const uid = await getId();
-    if (!uid) redirect('/login');
-
-    const rl = checkRateLimit(`market-buy:${uid}`, 20, 60000);
-    if (!rl.ok) redirect('/marketplace?error=Too+many+actions');
-
-    const lid = safeInt(formData.get('listing_id'), 1);
-    if (!lid) redirect('/marketplace?error=Invalid+listing');
-
-    const item = await dbOne('SELECT * FROM cms_marketplace WHERE id = ? AND status = ?', [lid, 'active']);
-    if (!item) redirect(`/marketplace/${lid}?error=Listing+unavailable`);
-    if (item.seller_id === uid) redirect(`/marketplace/${lid}?error=Cannot+buy+own+listing`);
-
-    const col = safeCurrencyColumn(item.currency);
-    if (!col) redirect(`/marketplace/${lid}?error=Invalid+currency`);
-
-    // Atomic deduct
-    const deduct = await db(
-      `UPDATE users SET \`${col}\` = \`${col}\` - ? WHERE id = ? AND \`${col}\` >= ?`,
-      [item.price, uid, item.price]
-    );
-    if (deduct.affectedRows === 0) redirect(`/marketplace/${lid}?error=Not+enough+diamonds`);
-
-    // Atomic sell (prevents race)
-    const sold = await db(
-      "UPDATE cms_marketplace SET status = 'sold', buyer_id = ?, sold_at = NOW() WHERE id = ? AND status = 'active'",
-      [uid, lid]
-    );
-    if (sold.affectedRows === 0) {
-      await db(`UPDATE users SET \`${col}\` = \`${col}\` + ? WHERE id = ?`, [item.price, uid]);
-      redirect(`/marketplace/${lid}?error=Already+sold`);
-    }
-
-    await db(`UPDATE users SET \`${col}\` = \`${col}\` + ? WHERE id = ?`, [item.price, item.seller_id]);
-    if (item.item_id) await db('UPDATE items SET user_id = ?, room_id = 0 WHERE id = ?', [uid, item.item_id]);
-    await db("UPDATE cms_marketplace_offers SET status = 'rejected' WHERE listing_id = ? AND status = 'pending'", [lid]);
-
-    try {
-      await db('INSERT INTO cms_marketplace_price_history (item_base_id, item_name, price, currency, listing_id, sold_at) VALUES (?, ?, ?, ?, ?, NOW())',
-        [item.item_base_id || 0, item.item_name, item.price, item.currency, lid]);
-    } catch(e) {}
-
-    const { sendNotification } = await import('@/lib/notifications');
-    sendNotification(item.seller_id, {
-      type: 'marketplace_sold',
-      title: 'Your listing sold!',
-      message: `"${item.item_name || item.title}" sold for ${item.price.toLocaleString()} ${item.currency}.`,
-      link: '/marketplace?tab=my',
-    });
-
-    redirect(`/marketplace/${lid}?msg=Purchase+successful!`);
-  }
 
   // Send offer
-  async function sendOffer(formData) {
-    'use server';
-    const { getSessionUserId: getId } = await import('@/lib/auth');
-    const { query: db, queryOne: dbOne } = await import('@/lib/db');
-    const { safeInt, sanitizeText, checkRateLimit } = await import('@/lib/security');
-    const uid = await getId();
-    if (!uid) redirect('/login');
-
-    const rl = checkRateLimit(`market-offer:${uid}`, 15, 60000);
-    if (!rl.ok) redirect('/marketplace?error=Too+many+offers');
-
-    const lid = safeInt(formData.get('listing_id'), 1);
-    const amount = safeInt(formData.get('offer_amount'), 1, 100000000);
-    const message = sanitizeText(formData.get('offer_message') || '', 500);
-
-    if (!lid || !amount) redirect(`/marketplace?error=Invalid+offer`);
-
-    const item = await dbOne('SELECT * FROM cms_marketplace WHERE id = ? AND status = ?', [lid, 'active']);
-    if (!item) redirect(`/marketplace/${lid}?error=Listing+unavailable`);
-    if (item.seller_id === uid) redirect(`/marketplace/${lid}?error=Cannot+offer+on+own`);
-
-    await db('INSERT INTO cms_marketplace_offers (listing_id, buyer_id, amount, currency, message) VALUES (?,?,?,?,?)',
-      [lid, uid, amount, item.currency, message]);
-
-    const { sendNotification } = await import('@/lib/notifications');
-    const buyer = await dbOne('SELECT username FROM users WHERE id = ?', [uid]);
-    sendNotification(item.seller_id, {
-      type: 'marketplace_offer',
-      title: 'New offer on your listing!',
-      message: `${buyer?.username || 'Someone'} offered ${amount.toLocaleString()} ${item.currency} for "${item.item_name || item.title}".`,
-      link: `/marketplace/${lid}`,
-    });
-
-    redirect(`/marketplace/${lid}?msg=Offer+sent!`);
-  }
 
   // Accept offer (with item transfer)
-  async function acceptOffer(formData) {
-    'use server';
-    const { getSessionUserId: getId } = await import('@/lib/auth');
-    const { query: db, queryOne: dbOne } = await import('@/lib/db');
-    const { safeInt, safeCurrencyColumn } = await import('@/lib/security');
-    const uid = await getId();
-    if (!uid) redirect('/login');
-
-    const offerId = safeInt(formData.get('offer_id'), 1);
-    if (!offerId) redirect('/marketplace?error=Invalid+offer');
-
-    const offer = await dbOne(`
-      SELECT o.*, ml.seller_id, ml.currency, ml.item_id, ml.item_base_id, ml.item_name, ml.price AS listing_price
-      FROM cms_marketplace_offers o
-      JOIN cms_marketplace ml ON ml.id = o.listing_id
-      WHERE o.id = ? AND o.status = 'pending'
-    `, [offerId]);
-    if (!offer || offer.seller_id !== uid) redirect('/marketplace?error=Invalid+offer');
-
-    const col = safeCurrencyColumn(offer.currency);
-    if (!col) redirect('/marketplace?error=Invalid+currency');
-
-    // Atomic deduct from buyer
-    const deduct = await db(
-      `UPDATE users SET \`${col}\` = \`${col}\` - ? WHERE id = ? AND \`${col}\` >= ?`,
-      [offer.amount, offer.buyer_id, offer.amount]
-    );
-    if (deduct.affectedRows === 0) redirect('/marketplace?error=Buyer+insufficient+funds');
-
-    await db(`UPDATE users SET \`${col}\` = \`${col}\` + ? WHERE id = ?`, [offer.amount, uid]);
-    if (offer.item_id) await db('UPDATE items SET user_id = ?, room_id = 0 WHERE id = ?', [offer.buyer_id, offer.item_id]);
-    await db('UPDATE cms_marketplace SET status = ?, buyer_id = ?, sold_at = NOW() WHERE id = ?', ['sold', offer.buyer_id, offer.listing_id]);
-    await db("UPDATE cms_marketplace_offers SET status = 'accepted' WHERE id = ?", [offerId]);
-    await db("UPDATE cms_marketplace_offers SET status = 'rejected' WHERE listing_id = ? AND id != ? AND status = 'pending'", [offer.listing_id, offerId]);
-
-    // Record price history (with offer amount)
-    try {
-      await db('INSERT INTO cms_marketplace_price_history (item_base_id, item_name, price, currency, listing_id, sold_at) VALUES (?, ?, ?, ?, ?, NOW())',
-        [offer.item_base_id || 0, offer.item_name, offer.amount, offer.currency, offer.listing_id]);
-    } catch(e) {}
-
-    redirect(`/marketplace/${listingId}?msg=Offer+accepted!+Item+sold.`);
-  }
 
   const rankColor = RANK_COLORS[listing.seller_rank] || '#8b949e';
 

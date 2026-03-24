@@ -5,8 +5,6 @@ import { query, queryOne } from '@/lib/db';
 import { timeAgo } from '@/lib/utils';
 import TicketReply from './TicketReply';
 
-export const dynamic = 'force-dynamic';
-
 export async function generateMetadata({ params }) {
   const p = await params;
   return { title: `Ticket #${p.id}` };
@@ -46,7 +44,7 @@ export default async function TicketDetailPage({ params }) {
       {/* Ticket header */}
       <div className="panel no-hover" style={{ padding: 20, marginBottom: 20, display: 'flex', alignItems: 'center', gap: 16 }}>
         <div style={{ flex: 1 }}>
-          <h1 style={{ fontSize: 18, fontWeight: 800, marginBottom: 4 }}>#{ticket.id} — {ticket.subject}</h1>
+          <h1 style={{ fontSize: 18, fontWeight: 800, marginBottom: 4 }}>#{ticket.id} {ticket.subject}</h1>
           <div style={{ fontSize: 11, color: 'var(--text-muted)', display: 'flex', gap: 12 }}>
             <span>By {ticket.username}</span>
             <span>{ticket.category}</span>

@@ -1,8 +1,6 @@
 import Link from 'next/link';
 import { query, queryScalar } from '@/lib/db';
 
-export const dynamic = 'force-dynamic';
-
 export const metadata = { title: 'Rare Values' };
 
 export default async function RaresPage({ searchParams }) {
@@ -17,12 +15,12 @@ export default async function RaresPage({ searchParams }) {
   let rares = [], total = 0, pages = 1, categories = [];
   if (tab === 'rares') {
     let where = [];
-    let params = [];
-    if (cat !== 'all') { where.push('category = ?'); params.push(cat); }
-    if (search) { where.push('item_name LIKE ?'); params.push(`%${search}%`); }
+    let queryParams = [];
+    if (cat !== 'all') { where.push('category = ?'); queryParams.push(cat); }
+    if (search) { where.push('item_name LIKE ?'); queryParams.push(`%${search}%`); }
     const whereSQL = where.length > 0 ? 'WHERE ' + where.join(' AND ') : '';
 
-    total = await queryScalar(`SELECT COUNT(*) FROM cms_rare_values ${whereSQL}`, params);
+    total = await queryScalar(`SELECT COUNT(*) FROM cms_rare_values ${whereSQL}`, queryParams);
     pages = Math.max(1, Math.ceil(total / perPage));
     const offset = (Math.min(page, pages) - 1) * perPage;
 
@@ -33,7 +31,7 @@ export default async function RaresPage({ searchParams }) {
         (SELECT MIN(sub2.price) FROM (SELECT price FROM cms_marketplace_price_history ph3 WHERE ph3.item_name = r.item_name ORDER BY ph3.sold_at DESC LIMIT 20) sub2) AS market_low,
         (SELECT MAX(sub3.price) FROM (SELECT price FROM cms_marketplace_price_history ph4 WHERE ph4.item_name = r.item_name ORDER BY ph4.sold_at DESC LIMIT 20) sub3) AS market_high
       FROM cms_rare_values r ${whereSQL} ORDER BY r.updated_at DESC LIMIT ? OFFSET ?
-    `, [...params, perPage, offset]);
+    `, [...queryParams, perPage, offset]);
     categories = await query('SELECT DISTINCT category FROM cms_rare_values ORDER BY category');
   }
 

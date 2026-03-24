@@ -2,8 +2,6 @@ import { redirect } from 'next/navigation';
 import { getCurrentUser } from '@/lib/auth';
 import TicketForm from './TicketForm';
 
-export const dynamic = 'force-dynamic';
-
 export const metadata = { title: 'Create Ticket' };
 
 export default async function CreateTicketPage() {

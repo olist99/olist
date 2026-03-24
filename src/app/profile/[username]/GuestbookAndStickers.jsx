@@ -9,13 +9,25 @@ function parseUtc(s) {
   const t = s.toString().trim().replace(' UTC', '').replace(' ', 'T');
   return new Date(t.endsWith('Z') ? t : t + 'Z');
 }
-function timeAgo(s) {
-  if (!s) return '';
-  const diff = Math.floor((Date.now() - parseUtc(s)) / 1000);
-  if (diff < 60)    return 'just now';
-  if (diff < 3600)  return `${Math.floor(diff / 60)}m ago`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
-  return `${Math.floor(diff / 86400)}d ago`;
+function timeAgo(dateStr) {
+  if (!dateStr) return '';
+  let then;
+  if (dateStr instanceof Date) {
+    then = dateStr;
+  } else if (typeof dateStr === 'number') {
+    then = new Date(dateStr * 1000);
+  } else {
+    const s = String(dateStr).trim().replace(' UTC', '');
+    // Handle "YYYY-MM-DD HH:MM:SS" from mysql2 dateStrings
+    const normalized = s.replace(' ', 'T');
+    then = new Date(normalized.endsWith('Z') ? normalized : normalized + 'Z');
+  }
+  if (!then || isNaN(then.getTime())) return '';
+  const diff = Math.floor((Date.now() - then.getTime()) / 1000);
+  if (diff < 60) return 'just now';
+  if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+  if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+  return Math.floor(diff / 86400) + 'd ago';
 }
 
 const ctrlBtn = {

@@ -173,7 +173,7 @@ export default function BadgeMaker() {
       <div className="panel no-hover" style={{ padding: 24, marginBottom: 20 }}>
         <h1 style={{ fontSize: 22, fontWeight: 800, marginBottom: 4 }}>Badge Maker</h1>
         <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-          Draw a 40×40 pixel badge or upload a GIF. The checkerboard pattern = transparent — those pixels won't appear on your badge.
+          Draw a 40×40 pixel badge or upload a GIF. The checkerboard pattern = transparent, those pixels won't appear on your badge.
         </p>
       </div>
 

@@ -1,4 +1,3 @@
-export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import { query, queryOne, queryScalar } from '@/lib/db';
@@ -202,7 +201,7 @@ export async function POST(request) {
 
     // Notify all users via bulk INSERT (no per-row loop)
     try {
-      const allUsers = await query('SELECT id FROM users WHERE rank >= 1 AND id != ?', [user.id]).catch(() => []);
+      const allUsers = await query('SELECT id FROM users WHERE `rank` >= 1 AND id != ?', [user.id]).catch(() => []);
       if (allUsers.length > 0) {
         const chunkSize = 500;
         for (let i = 0; i < allUsers.length; i += chunkSize) {
@@ -227,7 +226,7 @@ export async function POST(request) {
 
   // ── Create user auction (pick item from inventory) ──
   if (action === 'create_user') {
-    const rl = checkRateLimit(`auction_create:${user.id}`, 3, 3600000);
+    const rl = await checkRateLimit(`auction_create:${user.id}`, 3, 3600000);
     if (!rl.ok) return NextResponse.json({ error: 'You can only create 3 auctions per hour.' }, { status: 429 });
 
     const itemId = safeInt(body.item_id, 1);
@@ -282,7 +281,7 @@ export async function POST(request) {
 
   // ── Place bid ──
   if (action === 'bid') {
-    const rl = checkRateLimit(`auction_bid:${user.id}`, 5, 10000);
+    const rl = await checkRateLimit(`auction_bid:${user.id}`, 5, 10000);
     if (!rl.ok) return NextResponse.json({ error: 'Too fast, slow down.' }, { status: 429 });
 
     const auctionId = safeInt(body.auction_id, 1);

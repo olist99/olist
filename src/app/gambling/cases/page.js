@@ -2,8 +2,6 @@ import { redirect } from 'next/navigation';
 import { getCurrentUser } from '@/lib/auth';
 import CaseOpeningGame from './CaseOpeningGame';
 
-export const dynamic = 'force-dynamic';
-
 export const metadata = { title: 'Case Opening' };
 
 export default async function CasesPage() {

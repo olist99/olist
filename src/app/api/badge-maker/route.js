@@ -1,4 +1,3 @@
-export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import { getSessionUserId, getCurrentUser } from '@/lib/auth';
 import { query, queryOne } from '@/lib/db';

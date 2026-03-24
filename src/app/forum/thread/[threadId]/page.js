@@ -5,7 +5,6 @@ import { query, queryOne } from '@/lib/db';
 import ThreadActions from './ThreadActions';
 import { renderBBCode } from '@/lib/bbcode';
 
-export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }) {
   const p = await params;
@@ -27,8 +26,8 @@ export default async function ThreadPage({ params, searchParams }) {
   const thread = await queryOne(`
     SELECT t.*, u.username, u.look, u.rank AS user_rank,
       c.name AS category_name, c.icon AS category_icon, c.id AS category_id,
-      c.min_rank, c.post_min_rank,
-      COALESCE(t.created_at, t.timestamp, t.date, t.posted_at) AS created_at
+      IFNULL(c.min_rank, 0) AS min_rank,
+      IFNULL(c.post_min_rank, 0) AS post_min_rank
     FROM cms_forum_threads t
     JOIN users u ON u.id = t.user_id
     JOIN cms_forum_categories c ON c.id = t.category_id

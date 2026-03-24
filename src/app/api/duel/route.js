@@ -1,4 +1,3 @@
-export const dynamic = 'force-dynamic';
 /**
  * Duel API — shared for Dice Duel & High Card (solo + multiplayer rooms)
  *
@@ -101,7 +100,7 @@ export async function POST(request) {
 
   // ── SOLO ──
   if (action === 'solo') {
-    const rl = checkRateLimit(`duel-solo:${userId}`, 20, 60000);
+    const rl = await checkRateLimit(`duel-solo:${userId}`, 20, 60000);
     if (!rl.ok) return NextResponse.json({ error: 'Too fast!' }, { status: 429 });
 
     const bet = safeInt(body.bet, 1, 10000000);
@@ -120,6 +119,13 @@ export async function POST(request) {
         dealerDisplay = dealerVal;
         tries++;
       } while (playerVal === dealerVal && tries < 20);
+      // If still tied after max retries, force a winner with one final distinct roll
+      while (playerVal === dealerVal) {
+        playerVal = rollDie();
+        dealerVal = rollDie();
+        playerDisplay = playerVal;
+        dealerDisplay = dealerVal;
+      }
     } else {
       let pc, dc;
       do {
@@ -128,6 +134,12 @@ export async function POST(request) {
         playerDisplay = pc; dealerDisplay = dc;
         tries++;
       } while (playerVal === dealerVal && tries < 20);
+      // If still tied after max retries, force a winner with one final distinct draw
+      while (playerVal === dealerVal) {
+        pc = drawCard(); dc = drawCard();
+        playerVal = cardVal(pc); dealerVal = cardVal(dc);
+        playerDisplay = pc; dealerDisplay = dc;
+      }
     }
 
     const win = playerVal > dealerVal;
@@ -157,7 +169,7 @@ export async function POST(request) {
 
   // ── CREATE ROOM ──
   if (action === 'create') {
-    const rl = checkRateLimit(`duel-create:${userId}`, 5, 60000);
+    const rl = await checkRateLimit(`duel-create:${userId}`, 5, 60000);
     if (!rl.ok) return NextResponse.json({ error: 'Too fast!' }, { status: 429 });
 
     const mode = body.mode;
@@ -183,7 +195,7 @@ export async function POST(request) {
 
   // ── JOIN ROOM ──
   if (action === 'join') {
-    const rl = checkRateLimit(`duel-join:${userId}`, 10, 60000);
+    const rl = await checkRateLimit(`duel-join:${userId}`, 10, 60000);
     if (!rl.ok) return NextResponse.json({ error: 'Too fast!' }, { status: 429 });
 
     const roomId = safeInt(body.roomId, 1);

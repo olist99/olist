@@ -3,7 +3,20 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 
 function timeAgo(dateStr) {
-  const diff = Math.floor((Date.now() - new Date(dateStr.toString().trim().replace(' UTC', '').replace(' ', 'T') + (dateStr.toString().endsWith('Z') ? '' : 'Z'))) / 1000);
+  if (!dateStr) return '';
+  let then;
+  if (dateStr instanceof Date) {
+    then = dateStr;
+  } else if (typeof dateStr === 'number') {
+    then = new Date(dateStr * 1000);
+  } else {
+    const s = String(dateStr).trim().replace(' UTC', '');
+    // Handle "YYYY-MM-DD HH:MM:SS" from mysql2 dateStrings
+    const normalized = s.replace(' ', 'T');
+    then = new Date(normalized.endsWith('Z') ? normalized : normalized + 'Z');
+  }
+  if (!then || isNaN(then.getTime())) return '';
+  const diff = Math.floor((Date.now() - then.getTime()) / 1000);
   if (diff < 60) return 'just now';
   if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
   if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';

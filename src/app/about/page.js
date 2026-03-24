@@ -21,9 +21,9 @@ export default function AboutPage() {
       <div className="panel no-hover" style={{ padding: 28, marginBottom: 20 }}>
         <h2 style={{ fontSize: 17, fontWeight: 800, marginBottom: 14 }}>What is OCMS?</h2>
         <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.9, marginBottom: 12 }}>
-          OCMS (Open CMS) is a full-stack hotel website built with <strong>Next.js 14</strong>, <strong>React 18</strong>,
-          and <strong>MySQL</strong>. It connects directly to your Arcturus database and provides your players with a
-          feature-rich web experience — no external services or SaaS subscriptions required.
+          OCMS (Open CMS) is a full-stack hotel website built with <strong>Next.js 16.2</strong>, <strong>React 19.2</strong>,
+          and <strong>MySQL2</strong>. It connects directly to your Arcturus database and provides your players with a
+          feature-rich web experience, no external services or SaaS subscriptions required.
         </p>
         <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.9 }}>
           Everything runs on your own server. Your data stays yours.
@@ -32,7 +32,7 @@ export default function AboutPage() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14, marginTop: 20 }}>
           {[
             { title: 'JWT Authentication', desc: 'Secure session management with bcrypt password hashing and SSO for the Nitro client.' },
-            { title: 'Arcturus Integration', desc: 'Reads directly from your Arcturus DB — users, inventory, credits, badges, and more.' },
+            { title: 'Arcturus Integration', desc: 'Reads directly from your Arcturus DB, users, inventory, credits, badges, and more.' },
             { title: 'Nitro Client', desc: 'Built-in Nitro renderer with single sign-on. Players launch the hotel right from the browser.' },
           ].map((f, i) => (
             <div key={i} style={{ background: 'var(--panel-inner)', borderRadius: 'var(--radius)', padding: 16 }}>
@@ -95,8 +95,8 @@ export default function AboutPage() {
         <h2 style={{ fontSize: 17, fontWeight: 800, marginBottom: 14 }}>Tech Stack</h2>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
           {[
-            { name: 'Next.js 14', role: 'Framework' },
-            { name: 'React 18', role: 'UI' },
+            { name: 'Next.js 16.2', role: 'Framework' },
+            { name: 'React 19.2', role: 'UI' },
             { name: 'MySQL2', role: 'Database' },
             { name: 'Tailwind CSS', role: 'Styling' },
             { name: 'jose (JWT)', role: 'Auth' },

@@ -2,8 +2,6 @@ import { redirect } from 'next/navigation';
 import { getCurrentUser } from '@/lib/auth';
 import RouletteGame from './RouletteGame';
 
-export const dynamic = 'force-dynamic';
-
 export const metadata = { title: 'Roulette' };
 
 export default async function GamblingPage() {

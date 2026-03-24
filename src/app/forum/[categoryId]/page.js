@@ -4,13 +4,14 @@ import { getCurrentUser } from '@/lib/auth';
 import { query, queryOne } from '@/lib/db';
 import ForumThreadList from '@/components/ForumThreadList'; // client component
 
-export const dynamic = 'force-dynamic';
-
 export async function generateMetadata({ params }) {
+  await params;
   return { title: 'Forum' };
 }
 
-export default async function ForumCategoryPage({ params, searchParams }) {
+export default async function ForumCategoryPage({ params: rawParams, searchParams: rawSP }) {
+  const params = await rawParams;
+  const searchParams = await rawSP;
   const user = await getCurrentUser();
   if (!user) redirect('/login');
 

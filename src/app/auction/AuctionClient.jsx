@@ -367,7 +367,7 @@ export default function AuctionClient({ userId, userRank, initialAuctions }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       <div className="panel no-hover" style={{ padding: 0, overflow: 'hidden' }}>
         <div style={{ padding: '12px 14px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: 8 }}>
-          <img src="/images/noti/auction_won_noti.png" alt="" style={{ width: 20, height: 20, imageRendering: 'pixelated' }} />
+          <img src="/images/navigation/question.png" alt="" style={{ width: 20, height: 20, imageRendering: 'pixelated' }} />
           <span style={{ fontWeight: 800, fontSize: 13 }}>How it works</span>
         </div>
         {[

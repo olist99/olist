@@ -1,8 +1,13 @@
-export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import { query, queryOne } from '@/lib/db';
 import { sendNotification } from '@/lib/notifications';
+import { checkRateLimit, safeInt } from '@/lib/security';
+
+// Max reward values — prevents a rogue DB row from granting unlimited currency
+const MAX_REWARD_CREDITS = 10000;
+const MAX_REWARD_PIXELS  = 10000;
+const MAX_REWARD_POINTS  = 1000;
 
 // Default 7-day reward config (overridden by cms_daily_rewards table if rows exist)
 const DEFAULT_REWARDS = [
@@ -92,6 +97,10 @@ export async function POST() {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
+  // Rate limit: 5 attempts per minute (DB is the true once-per-day guard below)
+  const rl = await checkRateLimit(`daily-reward:${user.id}`, 5, 60000);
+  if (!rl.ok) return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+
   await ensureTable();
 
   // Re-check using MySQL date comparison — authoritative guard
@@ -113,14 +122,17 @@ export async function POST() {
   const rewards = await getRewards();
   const reward = rewards.find(r => r.day === streakDay) || rewards[0];
 
-  // Award currency atomically
-  const updates = [];
-  if (reward.credits > 0) updates.push(`credits = credits + ${parseInt(reward.credits)}`);
-  if (reward.pixels  > 0) updates.push(`pixels  = pixels  + ${parseInt(reward.pixels)}`);
-  if (reward.points  > 0) updates.push(`points  = points  + ${parseInt(reward.points)}`);
-  if (updates.length > 0) {
-    await query(`UPDATE users SET ${updates.join(', ')} WHERE id = ?`, [user.id]);
-  }
+  // Clamp reward values from DB to safe maximums (prevents rogue admin DB rows)
+  const credits = Math.min(safeInt(reward.credits, 0, MAX_REWARD_CREDITS) ?? 0, MAX_REWARD_CREDITS);
+  const pixels  = Math.min(safeInt(reward.pixels,  0, MAX_REWARD_PIXELS)  ?? 0, MAX_REWARD_PIXELS);
+  const points  = Math.min(safeInt(reward.points,  0, MAX_REWARD_POINTS)  ?? 0, MAX_REWARD_POINTS);
+
+  // FIX #5: Use separate parameterized queries instead of string interpolation.
+  // The old code built `UPDATE users SET credits = credits + ${parseInt(val)}` which
+  // is exploitable by an admin inserting crafted values into cms_daily_rewards.
+  if (credits > 0) await query('UPDATE users SET credits = credits + ? WHERE id = ?', [credits, user.id]);
+  if (pixels  > 0) await query('UPDATE users SET pixels  = pixels  + ? WHERE id = ?', [pixels,  user.id]);
+  if (points  > 0) await query('UPDATE users SET points  = points  + ? WHERE id = ?', [points,  user.id]);
 
   // Record claim
   await query(
@@ -132,9 +144,9 @@ export async function POST() {
   await sendNotification(user.id, {
     type: 'daily_reward',
     title: `Day ${streakDay} reward claimed!`,
-    message: `+${reward.credits} credits${reward.pixels ? `, +${reward.pixels} duckets` : ''}${reward.points ? `, +${reward.points} diamonds` : ''}`,
+    message: `+${credits} credits${pixels ? `, +${pixels} duckets` : ''}${points ? `, +${points} diamonds` : ''}`,
     link: '/',
   });
 
-  return NextResponse.json({ ok: true, reward, streakDay });
+  return NextResponse.json({ ok: true, reward: { ...reward, credits, pixels, points }, streakDay });
 }

@@ -4,8 +4,6 @@ import { getCurrentUser } from '@/lib/auth';
 import { query } from '@/lib/db';
 import { timeAgo } from '@/lib/utils';
 
-export const dynamic = 'force-dynamic';
-
 export const metadata = { title: 'My Tickets' };
 
 const STATUS_COLORS = { open: '#f5a623', answered: '#34bd59', closed: '#8b949e' };

@@ -7,7 +7,6 @@ import Avatar from '@/components/Avatar';
 import GuestbookAndStickers from './GuestbookAndStickers';
 import ProfileActions from './ProfileActions';
 
-export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }) {
   const p = await params;
@@ -21,7 +20,7 @@ export default async function ProfilePage({ params }) {
            u.rank, u.online, u.last_online, u.account_created, u.gotw,
            p.rank_name, p.badge AS rank_badge
     FROM users u
-    LEFT JOIN permissions p ON p.id = u.rank
+    LEFT JOIN permissions p ON p.id = u.\`rank\`
     WHERE u.username = ?
   `, [p.username]);
 

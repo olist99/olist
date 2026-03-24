@@ -3,8 +3,6 @@ import { query, queryScalar } from '@/lib/db';
 import { timeAgo, formatNumber } from '@/lib/utils';
 import Avatar from '@/components/Avatar';
 
-export const dynamic = 'force-dynamic';
-
 export const metadata = { title: 'News' };
 
 export default async function NewsPage({ searchParams }) {
@@ -43,7 +41,7 @@ export default async function NewsPage({ searchParams }) {
           <div className="p-5">
             <div className="flex items-center gap-3 text-xs text-text-muted mb-2.5 flex-wrap">
               <span className="bg-accent text-bg-primary px-2 py-0.5 rounded font-bold text-[10px]">{article.tag}</span>
-              <span>{timeAgo(article.created_at)} — {new Date(article.created_at.toString().trim().replace(' UTC','').replace(' ','T') + (article.created_at.toString().endsWith('Z') ? '' : 'Z')).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+              <span>{timeAgo(article.created_at)} — {new Date(article.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
               <span>by <Link href={`/profile/${article.author_name}`} className="text-accent">{article.author_name}</Link></span>
               <span>👁 {formatNumber(article.views)}</span>
               <span><img src="/images/icon-comment.png" alt="" style={{ width: 12, height: 12, imageRendering: 'pixelated', verticalAlign: 'middle', marginRight: 3 }} />{article.comment_count}</span>

@@ -1,8 +1,6 @@
 import { getCurrentUser } from '@/lib/auth';
 import CameraClient from './CameraClient';
 
-export const dynamic = 'force-dynamic';
-
 export const metadata = { title: 'Camera Gallery' };
 
 export default async function CameraPage() {

@@ -4,15 +4,12 @@ import { getCurrentUser } from '@/lib/auth';
 import { query } from '@/lib/db';
 import AuctionClient from './AuctionClient';
 
-export const dynamic = 'force-dynamic';
-
 export const metadata = { title: 'Auction House' };
 
 export default async function AuctionPage() {
   const user = await getCurrentUser();
   if (!user) redirect('/login');
   if (!await isPluginEnabled('auction')) redirect('/');
-
 
   const auctions = await query(`
     SELECT a.*,
