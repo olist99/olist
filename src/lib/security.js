@@ -94,45 +94,80 @@ export function safePerPage(input, max = 100) {
   return safeInt(input, 1, max) || 20;
 }
 
-// ── Rate Limiting (in-memory, per IP/userId) ──
+// ── Rate Limiting (DB-backed, shared across all worker processes) ──
+//
+// FIX #3: The old in-memory Map was per-worker — with N Next.js workers users
+// effectively got N× the rate limit. This implementation uses a shared MySQL
+// table so all workers see the same counters.
+//
+// The table is created automatically on first use. checkRateLimit is now async.
 
-const rateLimitStore = new Map();
-const CLEANUP_INTERVAL = 60000; // clean every 60s
+let rlTableReady = false;
 
-// Auto-cleanup old entries
-if (typeof setInterval !== 'undefined') {
-  setInterval(() => {
-    const now = Date.now();
-    for (const [key, entry] of rateLimitStore) {
-      if (now - entry.windowStart > 120000) rateLimitStore.delete(key);
-    }
-  }, CLEANUP_INTERVAL);
+async function ensureRLTable() {
+  if (rlTableReady) return;
+  // Lazy import avoids circular dependency (db → security → db)
+  const { query } = await import('./db.js');
+  await query(`
+    CREATE TABLE IF NOT EXISTS cms_rate_limits (
+      rl_key       VARCHAR(255) NOT NULL PRIMARY KEY,
+      count        INT UNSIGNED NOT NULL DEFAULT 1,
+      window_start INT UNSIGNED NOT NULL
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+  `).catch(() => {});
+  rlTableReady = true;
+  // Purge rows older than 1 hour on startup — runs once per worker lifecycle
+  query('DELETE FROM cms_rate_limits WHERE window_start < UNIX_TIMESTAMP() - 3600').catch(() => {});
 }
 
 /**
  * Check rate limit. Returns { ok, remaining, retryAfter }.
- * @param {string} key - Unique key (e.g., "login:192.168.1.1" or "bet:123")
- * @param {number} maxRequests - Max requests per window
- * @param {number} windowMs - Time window in milliseconds
+ * NOW ASYNC — all callers must await this.
+ *
+ * @param {string} key         - Unique key (e.g. "login:username" or "slots:42")
+ * @param {number} maxRequests - Max requests allowed per window
+ * @param {number} windowMs    - Window duration in milliseconds
  */
-export function checkRateLimit(key, maxRequests = 10, windowMs = 60000) {
-  const now = Date.now();
-  let entry = rateLimitStore.get(key);
+export async function checkRateLimit(key, maxRequests = 10, windowMs = 60000) {
+  try {
+    await ensureRLTable();
+    const { query } = await import('./db.js');
 
-  if (!entry || now - entry.windowStart > windowMs) {
-    entry = { count: 1, windowStart: now };
-    rateLimitStore.set(key, entry);
-    return { ok: true, remaining: maxRequests - 1 };
+    const windowSec = Math.ceil(windowMs / 1000);
+    const now = Math.floor(Date.now() / 1000);
+
+    // Single atomic round-trip:
+    // • If no row exists → INSERT with count=1
+    // • If row exists and window has expired → reset count to 1, update window_start
+    // • If row exists and window is current → increment count
+    await query(`
+      INSERT INTO cms_rate_limits (rl_key, count, window_start)
+      VALUES (?, 1, ?)
+      ON DUPLICATE KEY UPDATE
+        count        = IF(? - window_start >= ?, 1,                      count + 1),
+        window_start = IF(? - window_start >= ?, VALUES(window_start), window_start)
+    `, [key, now, now, windowSec, now, windowSec]);
+
+    const row = await query(
+      'SELECT count, window_start FROM cms_rate_limits WHERE rl_key = ?',
+      [key]
+    ).then(r => r[0] ?? null);
+
+    const count = row?.count ?? 1;
+
+    if (count > maxRequests) {
+      const retryAfter = Math.max(1, (row.window_start + windowSec) - now);
+      return { ok: false, remaining: 0, retryAfter };
+    }
+
+    return { ok: true, remaining: Math.max(0, maxRequests - count) };
+
+  } catch (err) {
+    // If the DB is down, fail open rather than blocking all requests.
+    // Log the error so ops can catch it, but don't bring the site down.
+    console.error('[checkRateLimit] DB error, failing open:', err?.message);
+    return { ok: true, remaining: maxRequests };
   }
-
-  entry.count++;
-
-  if (entry.count > maxRequests) {
-    const retryAfter = Math.ceil((entry.windowStart + windowMs - now) / 1000);
-    return { ok: false, remaining: 0, retryAfter };
-  }
-
-  return { ok: true, remaining: maxRequests - entry.count };
 }
 
 // ── Security headers helper ──

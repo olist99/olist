@@ -3,12 +3,25 @@ import React from 'react';
 import Link from 'next/link';
 
 // Move timeAgo here so it's in scope
-function timeAgo(date) {
-  const diff = Math.floor((Date.now() - new Date(date.toString().trim().replace(' UTC', '').replace(' ', 'T') + (date.toString().endsWith('Z') ? '' : 'Z'))) / 1000);
+function timeAgo(dateStr) {
+  if (!dateStr) return '';
+  let then;
+  if (dateStr instanceof Date) {
+    then = dateStr;
+  } else if (typeof dateStr === 'number') {
+    then = new Date(dateStr * 1000);
+  } else {
+    const s = String(dateStr).trim().replace(' UTC', '');
+    // Handle "YYYY-MM-DD HH:MM:SS" from mysql2 dateStrings
+    const normalized = s.replace(' ', 'T');
+    then = new Date(normalized.endsWith('Z') ? normalized : normalized + 'Z');
+  }
+  if (!then || isNaN(then.getTime())) return '';
+  const diff = Math.floor((Date.now() - then.getTime()) / 1000);
   if (diff < 60) return 'just now';
-  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
-  return `${Math.floor(diff / 86400)}d ago`;
+  if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+  if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+  return Math.floor(diff / 86400) + 'd ago';
 }
 
 export default function ForumThreadList({ category, threads, page, totalPages, canPost, categoryId }) {

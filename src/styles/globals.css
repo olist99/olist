@@ -50,7 +50,7 @@ img, svg { vertical-align: middle; }
     position: absolute;
     top: 0;
     left: 0;
-    background: url(/images/header_right.png) 0 100% no-repeat, url(/images/header_left.png) 100% 100% no-repeat, url(/images/TVmmxDO.png) center 100% no-repeat, var(--green);
+    background: url(/images/header_right.png) 0 100% no-repeat, url(/images/header_left.png) 100% 100% no-repeat, url(https://i.imgur.com/TVmmxDO.png) center 100% no-repeat, var(--green);
     z-index: 0;
 }
 

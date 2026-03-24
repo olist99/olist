@@ -17,13 +17,25 @@ const TYPE_ICONS = {
   general:           '/images/noti/general_noti.png',
 };
 
-function timeAgo(str) {
-  if (!str) return '';
-  const diff = Math.floor((Date.now() - new Date(str.toString().trim().replace(' UTC', '').replace(' ', 'T') + (str.toString().endsWith('Z') ? '' : 'Z'))) / 1000);
+function timeAgo(dateStr) {
+  if (!dateStr) return '';
+  let then;
+  if (dateStr instanceof Date) {
+    then = dateStr;
+  } else if (typeof dateStr === 'number') {
+    then = new Date(dateStr * 1000);
+  } else {
+    const s = String(dateStr).trim().replace(' UTC', '');
+    // Handle "YYYY-MM-DD HH:MM:SS" from mysql2 dateStrings
+    const normalized = s.replace(' ', 'T');
+    then = new Date(normalized.endsWith('Z') ? normalized : normalized + 'Z');
+  }
+  if (!then || isNaN(then.getTime())) return '';
+  const diff = Math.floor((Date.now() - then.getTime()) / 1000);
   if (diff < 60) return 'just now';
-  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
-  return `${Math.floor(diff / 86400)}d ago`;
+  if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+  if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+  return Math.floor(diff / 86400) + 'd ago';
 }
 
 export default function NotificationBell() {
@@ -77,6 +89,11 @@ export default function NotificationBell() {
     setData(d => ({ ...d, unread: 0, notifications: d.notifications.map(n => ({ ...n, is_read: 1 })) }));
   };
 
+  const clearAll = async () => {
+    await fetch('/api/notifications', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'clear_all' }) });
+    setData({ unread: 0, notifications: [] });
+  };
+
   const markRead = async (id) => {
     await fetch('/api/notifications', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'mark_read', id }) });
     setData(d => ({ ...d, unread: Math.max(0, d.unread - 1), notifications: d.notifications.map(n => n.id === id ? { ...n, is_read: 1 } : n) }));
@@ -114,9 +131,14 @@ export default function NotificationBell() {
         >
           <div className="notif-header">
             <span>Notifications</span>
-            {data.unread > 0 && (
-              <button onClick={markAllRead} className="notif-mark-all">Mark all read</button>
-            )}
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              {data.unread > 0 && (
+                <button onClick={markAllRead} className="notif-mark-all">Mark all read</button>
+              )}
+              {data.notifications.length > 0 && (
+                <button onClick={clearAll} className="notif-mark-all" style={{ color: '#EF5856' }}>Clear all</button>
+              )}
+            </div>
           </div>
 
           {data.notifications.length === 0 ? (

@@ -1,10 +1,5 @@
 import mysql from 'mysql2/promise';
 
-/**
- * MySQL connection pool for Arcturus Morningstar DB
- * Uses the same database that the emulator connects to
- */
-
 let pool = null;
 
 export function getPool() {
@@ -16,35 +11,32 @@ export function getPool() {
       password: process.env.DB_PASS || '',
       database: process.env.DB_NAME || 'arcturus',
       waitForConnections: true,
-      connectionLimit: 10,
+      // FIX #12: Raised from 10 → 25. With gambling, marketplace, auction, and
+      // active users all hitting the DB concurrently, 10 connections exhausts
+      // quickly and causes silent "Too many connections" crashes. 20–25 is safer.
+      // Set via DB_CONNECTION_LIMIT env var to tune per deployment.
+      connectionLimit: parseInt(process.env.DB_CONNECTION_LIMIT || '25'),
       queueLimit: 0,
       charset: 'utf8mb4',
       timezone: '+00:00',
+      connectTimeout: 3000,
+      dateStrings: true,
     });
   }
   return pool;
 }
 
-/**
- * Execute a query with params
- */
 export async function query(sql, params = []) {
   const db = getPool();
   const [rows] = await db.query(sql, params);
   return rows;
 }
 
-/**
- * Get single row
- */
 export async function queryOne(sql, params = []) {
   const rows = await query(sql, params);
   return rows[0] || null;
 }
 
-/**
- * Get scalar value
- */
 export async function queryScalar(sql, params = []) {
   const row = await queryOne(sql, params);
   return row ? Object.values(row)[0] : null;

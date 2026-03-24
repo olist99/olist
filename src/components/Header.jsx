@@ -6,20 +6,21 @@ import { Suspense, useState, useEffect } from 'react';
 import NotificationBell from './NotificationBell';
 
 // ── Top nav items — edit here to add/remove/reorder ──
-// slug matches the plugin slug in plugins.js — null means always shown (core page)
 const NAV_ITEMS = [
-  { href: '/community',   label: 'Community',    icon: '/images/nav-community.png',    slug: null },
-  { href: '/shop',        label: 'Shop',         icon: '/images/nav-shop.png',         slug: 'shop' },
-  { href: '/marketplace', label: 'Marketplace',  icon: '/images/nav-marketplace.png',  slug: 'marketplace' },
-  { href: '/auction',     label: 'Auction',      icon: '/images/nav-marketplace.png',  slug: 'auction' },
-  { href: '/gambling',    label: 'Gambling',     icon: '/images/nav-gambling.png',     slug: 'gambling' },
-  { href: '/forum',       label: 'Forum',        icon: '/images/nav-forum.png',        slug: 'forum' },
-  { href: '/rules',       label: 'Rules & Help', icon: '/images/nav-help.png',         slug: 'help' },
+  { href: '/community',   label: 'Community',    icon: '/images/nav-community.png',  slug: null },
+  { href: '/token-shop',  label: 'Token Shop',   icon: '/images/nav-shop.png',        slug: 'token-shop' },
+  { href: '/marketplace', label: 'Marketplace',  icon: '/images/nav-marketplace.png', slug: 'marketplace' },
+  { href: '/auction',     label: 'Auction',      icon: '/images/nav-marketplace.png', slug: 'auction' },
+  { href: '/gambling',    label: 'Gambling',     icon: '/images/nav-gambling.png',    slug: 'gambling' },
+  { href: '/forum',       label: 'Forum',        icon: '/images/nav-forum.png',       slug: 'forum' },
+  { href: '/rules',       label: 'Rules & Help', icon: '/images/nav-help.png',        slug: 'help' },
 ];
 
 const COMMUNITY_ITEMS = [
   { href: '/community',    label: 'Overview',     exact: true },
   { href: '/news',         label: 'News' },
+  { href: '/events',       label: 'Events' },
+  { href: '/polls',        label: 'Polls' },
   { href: '/leaderboards', label: 'Leaderboards' },
   { href: '/online',       label: 'Online' },
   { href: '/staff',        label: 'Staff' },
@@ -39,6 +40,8 @@ const SUB_NAVS = {
   '/badges':       COMMUNITY_ITEMS,
   '/community':    COMMUNITY_ITEMS,
   '/news':         COMMUNITY_ITEMS,
+  '/events':       COMMUNITY_ITEMS,
+  '/polls':        COMMUNITY_ITEMS,
   '/leaderboards': COMMUNITY_ITEMS,
   '/online':       COMMUNITY_ITEMS,
   '/staff':        COMMUNITY_ITEMS,
@@ -46,8 +49,8 @@ const SUB_NAVS = {
   '/forum': [
     { href: '/forum', label: 'Forum', exact: true },
   ],
-  '/shop': [
-    { href: '/shop', label: 'All Items', exact: true },
+  '/token-shop': [
+    { href: '/token-shop', label: 'Token Shop', exact: true },
   ],
   '/marketplace': [
     { href: '/marketplace',          label: 'Browse' },
@@ -59,6 +62,7 @@ const SUB_NAVS = {
   ],
   '/gambling': [
     { href: '/gambling',           label: 'Live Feed', exact: true },
+    { href: '/gambling/slots',     label: 'Slots' },
     { href: '/gambling/roulette',  label: 'Roulette' },
     { href: '/gambling/coinflip',  label: 'Coin Toss' },
     { href: '/gambling/blackjack', label: 'Blackjack' },
@@ -81,7 +85,7 @@ const SUB_NAVS = {
   ],
 };
 
-const COMMUNITY_PATHS = ['/community', '/news', '/leaderboards', '/online', '/staff', '/rares', '/badges', '/camera'];
+const COMMUNITY_PATHS = ['/community', '/news', '/events', '/polls', '/leaderboards', '/online', '/staff', '/rares', '/badges', '/camera'];
 
 function getSubNav(path) {
   if (SUB_NAVS[path]) return SUB_NAVS[path];
@@ -92,7 +96,7 @@ function getSubNav(path) {
 
 function getActiveNav(path) {
   if (COMMUNITY_PATHS.some(p => path.startsWith(p))) return '/community';
-  if (path.startsWith('/shop'))        return '/shop';
+  if (path.startsWith('/token-shop'))  return '/token-shop';
   if (path.startsWith('/marketplace')) return '/marketplace';
   if (path.startsWith('/auction'))     return '/auction';
   if (path.startsWith('/gambling'))    return '/gambling';
@@ -127,19 +131,28 @@ function SubNavInner({ user, path }) {
     }
     return false;
   };
+
   return subNavItems.map((item, i) => {
     const href = item.useUsername && user ? `/profile/${user.username}` : item.href;
     return <Link key={i} href={href} className={isActive(item) ? 'active' : ''}>{item.label}</Link>;
   });
 }
 
-export default function Header({ user, onlineCount, enabledPlugins = null }) {
+export default function Header({ user, onlineCount }) {
   const path = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [enabledPlugins, setEnabledPlugins] = useState(null);
 
   useEffect(() => { setMobileOpen(false); }, [path]);
 
-  // Filter nav items based on enabled plugins (null slug = always shown)
+  useEffect(() => {
+    fetch('/api/plugins')
+      .then(r => r.json())
+      .then(d => setEnabledPlugins(d.enabled || []))
+      .catch(() => setEnabledPlugins(null));
+  }, []);
+
+  // Filter nav: show all items until plugins load, then filter by enabled slugs
   const visibleNavItems = enabledPlugins
     ? NAV_ITEMS.filter(item => item.slug === null || enabledPlugins.includes(item.slug))
     : NAV_ITEMS;
@@ -161,7 +174,7 @@ export default function Header({ user, onlineCount, enabledPlugins = null }) {
   return (
     <>
       <div className="header-background" />
-      <div className="container" style={{ position: 'relative', zIndex: 2 }}>
+      <div className="container" style={{ position: 'relative', zIndex: 1 }}>
         <header className="header-top">
           <div>
             <Link href="/" className="header-logo"><img src="/images/logo.png" /></Link>
